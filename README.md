@@ -1,3 +1,5 @@
 NEXT_PUBLIC_API_URL =
+
 NEXTAUTH_SECRET = 
+
 BACKEND_URL = http://localhost:4000
