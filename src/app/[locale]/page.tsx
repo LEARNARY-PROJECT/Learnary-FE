@@ -4,7 +4,7 @@ import ListCourseCard from "@/components/ListCourseCard";
 
 export default function HomePage() {
   return (
-    <div className="w-full flex-col gap-1">
+    <div className="w-full flex-col gap-0">
       <Hero />
       <ListTopic />
       <ListCourseCard/>

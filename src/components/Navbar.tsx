@@ -99,7 +99,7 @@ function Navbar() {
               
               {renderAuthLinks()}
               
-              <ShoppingBagIcon className="h-6 w-6 cursor-pointer" />
+              <ShoppingBagIcon className="h-6 w-6 cursor-pointer hover:text-yellow-800" />
               <LanguageSwitcher />
             </div>
           </>
@@ -146,7 +146,7 @@ function Navbar() {
             
             {renderAuthLinks()}
 
-            <ShoppingBagIcon className="h-6 w-6 cursor-pointer" />
+            <ShoppingBagIcon className="h-6 w-6 cursor-pointer " />
           </div>
 
           <div>
