@@ -16,7 +16,6 @@ export default function ProtectedRoute({ children }: { children: React.ReactNode
     }
   }, [isLoading, isLoggedIn, router]); 
 
-  // Nếu đang loading, hiển thị màn hình chờ
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -25,7 +24,6 @@ export default function ProtectedRoute({ children }: { children: React.ReactNode
     );
   }
 
-  // Nếu đã đăng nhập, hiển thị trang
   if (isLoggedIn) {
     return <>{children}</>;
   }

@@ -8,13 +8,12 @@ export default function AuthCallbackPage() {
   const router = useRouter();
   const searchParams = useSearchParams(); 
   const { login } = useAuth(); 
-  /* 2 CÁI HOOK useEffect, useState, useCallBack*/
   useEffect(() => {
     const accessToken = searchParams.get('accessToken');
 
     if (accessToken) {
       login(accessToken); 
-      router.replace('/'); // Dùng replace để xóa lịch sử
+      router.replace('/');
     } else {
       router.replace('/login?error=callback_failed');
     }
