@@ -6,15 +6,14 @@ import LanguageSwitcher from "./LanguageSwitcher";
 import {
   Bars3Icon,
   XMarkIcon,
-  MagnifyingGlassIcon,
   ShoppingBagIcon,
   UserIcon,
-  ArrowRightOnRectangleIcon, 
+  ArrowRightOnRectangleIcon,
 } from "@heroicons/react/24/outline";
 
 import { useTranslations } from "next-intl";
 import { useIsMobile } from "@/hooks/useIsMobile";
-import { useAuth } from "@/app/context/AuthContext"; 
+import { useAuth } from "@/app/context/AuthContext";
 import Image from 'next/image'
 
 export const NavbarLinks = () => {
@@ -35,7 +34,7 @@ export const NavbarLinks = () => {
     },
     {
       name: t("detail"),
-      href:"/course-detail"
+      href: "/course-detail"
     }
   ];
 };
@@ -45,7 +44,7 @@ function Navbar() {
   const links = NavbarLinks();
   const [isOpen, setIsOpen] = useState(false);
   const { isLoggedIn, user, logout, isLoading } = useAuth();
-  const t = useTranslations("Navbar"); 
+  const t = useTranslations("Navbar");
 
   const renderAuthLinks = () => {
     if (isLoading) {
@@ -57,9 +56,15 @@ function Navbar() {
           <Link href="/profile" title={user.fullName}>
             <UserIcon className="h-6 w-6 cursor-pointer hover:text-blue-600" />
           </Link>
-          <button onClick={logout} title={t("logout")}>
+          <Link href="/cart" title={"Giỏ hàng"}>
+            <ShoppingBagIcon className="h-6 w-6 cursor-pointer " />
+          </Link>
+          <Link href="/logout" onClick={logout} title={t("logout")}>
             <ArrowRightOnRectangleIcon className="h-6 w-6 cursor-pointer hover:text-red-600" />
-          </button>
+          </Link>
+            <Link href="/changeLanguage" title={"Đổi ngôn ngữ"}>
+            <LanguageSwitcher />
+          </Link>
         </>
       );
     }
@@ -74,14 +79,14 @@ function Navbar() {
   };
 
   return (
-    <nav className="w-full px-4 md:px-10 bg-white text-black shadow-md sticky top-0 z-1000">
+    <nav className="w-full px-4 md:px-10 bg-white text-black sticky top-0 z-1000">
       <div className="container mx-auto flex items-center justify-between">
         <div className="flex justify-center h-full w-fit">
-          <Link href={'/'}><Image width={120} height={100} alt='logo' src={"/Logo/Logo-Black-NoBG.svg"}/></Link>
+          <Link href={'/'}><Image width={120} height={100} alt='logo' src={"/Logo/Logo-Black-NoBG.svg"} /></Link>
         </div>
         {!isMobile && (
           <>
-            <ul className="flex space-x-9 text-md ">
+            <ul className="flex space-x-1 text-md ">
               {links.map((link) => (
                 <li key={link.name}>
                   <Link
@@ -95,12 +100,7 @@ function Navbar() {
             </ul>
 
             <div className="flex items-center space-x-6">
-              <MagnifyingGlassIcon className="h-6 w-6 cursor-pointer" />
-              
               {renderAuthLinks()}
-              
-              <ShoppingBagIcon className="h-6 w-6 cursor-pointer" />
-              <LanguageSwitcher />
             </div>
           </>
         )}
@@ -142,15 +142,11 @@ function Navbar() {
           </ul>
 
           <div className="flex items-center space-x-6">
-            <MagnifyingGlassIcon className="h-6 w-6 cursor-pointer" />
-            
             {renderAuthLinks()}
-
-            <ShoppingBagIcon className="h-6 w-6 cursor-pointer" />
           </div>
 
           <div>
-            <LanguageSwitcher />
+           
           </div>
         </div>
       )}

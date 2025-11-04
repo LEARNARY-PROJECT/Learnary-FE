@@ -5,7 +5,7 @@
     "teach": "Become an Instructor",
     "detail":"Detail",
     "login": "Login",
-    "logout":"Logout"
+     "logout":"Logout"
   },
   "Topic": {
     "category_health": "Health",

@@ -35,25 +35,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const checkAuthOnLoad = async () => {
+
+      const existingToken = sessionStorage.getItem('accessToken');
+      
+      if (!existingToken) {
+        setIsLoading(false);
+        return;
+      }
+
       try {
         const response = await api.post('/auth/refresh');
         const { accessToken } = response.data;
-      
         const decodedUser = jwtDecode<AuthUser>(accessToken);
         setUser(decodedUser);
         setToken(accessToken);
         sessionStorage.setItem('accessToken', accessToken); 
       } catch (error) {
+        // Refresh failed -> xóa token cũ
         setUser(null);
         setToken(null);
         sessionStorage.removeItem('accessToken'); 
-        console.error("Không thể refresh token khi tải trang:", error);
+        console.error("Không thể refresh token:", error);
       } finally {
         setIsLoading(false);
       }
     };
+    
     checkAuthOnLoad();  
-  }, []);
+  }, []); // Chỉ chạy 1 lần khi mount
 
   const logout = useCallback(async() => {
     try {

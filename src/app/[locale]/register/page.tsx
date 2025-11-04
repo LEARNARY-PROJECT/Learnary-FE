@@ -140,7 +140,6 @@ export default function SignUpPage() {
               </Link>
             </div>
           </CardFooter>
-          
         </form>
       </Card>
     </div>

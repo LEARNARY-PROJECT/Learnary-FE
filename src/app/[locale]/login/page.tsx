@@ -36,20 +36,15 @@ export default function LoginPage() {
       }
     }
   }, [isLoggedIn, isAuthLoading]);
-
-  // Xử lý đăng nhập bằng Email/Pass
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSubmitting(true);
     setError(null);
-
     try {
-      // Gọi API của BE
       const response = await api.post(`/auth/login`, {
         email,
         password
       });
-      //GỌI HÀM LOGIN (chỉ với accessToken)
       login(response.data.accessToken); 
       window.location.href = '/';
     } catch (err) {
