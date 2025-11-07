@@ -35,9 +35,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const checkAuthOnLoad = async () => {
-
       const existingToken = sessionStorage.getItem('accessToken');
-      
       if (!existingToken) {
         setIsLoading(false);
         return;

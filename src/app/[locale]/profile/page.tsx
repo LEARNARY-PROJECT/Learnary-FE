@@ -2,7 +2,7 @@
 
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { useAuth } from "@/app/context/AuthContext";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import api from "@/app/lib/axios";
 import Image from "next/image";
 import {
@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/breadcrumb"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { useIsMobile } from "@/hooks/useIsMobile";
-import { EnvelopeIcon, MapPinIcon, CalendarIcon } from "@heroicons/react/24/outline";
+import { EnvelopeIcon, MapPinIcon, CalendarIcon, CameraIcon } from "@heroicons/react/24/outline";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -37,12 +37,14 @@ type UserProps = {
   role?: string,
   last_login?: Date
 }
-type UpdateUserData = Omit<UserProps,"user_id" | "role" | "isActive" | "last_login" | "email">
+type UpdateUserData = Omit<UserProps, "user_id" | "role" | "isActive" | "last_login" | "email">
 export default function ProfilePage() {
   const isMobile = useIsMobile();
   const { user } = useAuth();
   const [userInfo, setUserInfo] = useState<UserProps | null>(null);
   const [isEditing, setIsEditing] = useState(false);
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [formData, setFormData] = useState<UpdateUserData>({
     fullName: "",
     phone: "",
@@ -54,26 +56,87 @@ export default function ProfilePage() {
     bio: ""
   });
 
-  const handleEditInfo = async (id:string, data: UpdateUserData) => {
-      try {
-        if(!user) {
-          console.log("Bạn phải đăng nhập mới được phép sửa hồ sơ")
-          return
-        }
-        const res = await api.patch(`/users/update-info/${id}`, data);
-        if(!res) {
-          throw new Error(`HTTP Error! res: ${res}`)
-        }
+  const handleAvatarClick = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  };
 
-        setUserInfo({...userInfo, ...data} as UserProps);
-        setIsEditing(false);
-        toast.success("Cập nhật hồ sơ thành công")
-        return res.data
-      } catch (error: unknown) {
-        const err = error as { response?: { data?: unknown; status?: number }; message?: string };
-        toast.error("Cập nhật hồ sơ thất bại");
-        return err
+  const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      toast.error("Vui lòng chọn file ảnh!");
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error("Kích thước ảnh không được vượt quá 10MB!");
+      return;
+    }
+    setIsUploadingAvatar(true);
+
+    try {
+      const userId = userInfo?.user_id || user?.id || '';
+      const halfUserId = userId.slice(0, Math.floor(userId.length / 2)); 
+      const fileExtension = file.name.split('.').pop() || 'jpg';
+      // halfUserId.duoifile
+      const newFileName = `${halfUserId}.${fileExtension}`;
+      // Tạo file object mới với tên đã format
+      const renamedFile = new File([file], newFileName, {
+        type: file.type,
+        lastModified: file.lastModified,
+      });
+      // Upload file lên server (backend sẽ upload lên S3)
+      const formDataUpload = new FormData();
+      formDataUpload.append('avatar', renamedFile);
+      const response = await api.post(`/users/upload-avatar/${userInfo?.user_id}`, formDataUpload, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      // url s3 trả về từ backend
+      const avatarUrl = response.data.avatarUrl;
+      // Thêm timestamp để bắt buộc reload ảnh mới ngay lập tức (tránh hiện avatar cũ trong cache) và server dưới S3 sẽ bỏ qua query parameter, chỉ quan tâm path gốc nên sẽ không bị ảnh hưởng tên file được định dạng sẵn.
+      const avatarUrlWithTimestamp = `${avatarUrl}?t=${Date.now()}`;
+      // Cập nhật state
+      setFormData(prev => ({
+        ...prev,
+        avatar: avatarUrlWithTimestamp
+      }));
+      // Cập nhật userInfo để hiển thị ngay
+      setUserInfo(prev => prev ?  { 
+        ...prev,
+        avatar: avatarUrlWithTimestamp
+      } : prev)
+      
+      toast.success("Cập nhật avatar thành công!");
+      setIsUploadingAvatar(false);
+    } catch (error) {
+      console.error("Lỗi khi upload avatar:", error);
+      toast.error("Không thể tải ảnh lên. Vui lòng thử lại!");
+      setIsUploadingAvatar(false);
+    }
+  };
+
+  const handleEditInfo = async (id: string, data: UpdateUserData) => {
+    try {
+      if (!user) {
+        console.log("Bạn phải đăng nhập mới được phép sửa hồ sơ")
+        return
       }
+      const res = await api.patch(`/users/update-info/${id}`, data);
+      if (!res) {
+        throw new Error(`HTTP Error! res: ${res}`)
+      }
+      setUserInfo({ ...userInfo, ...data } as UserProps);
+      setIsEditing(false);
+      toast.success("Cập nhật hồ sơ thành công")
+      return res.data
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: unknown; status?: number }; message?: string };
+      toast.error("Cập nhật hồ sơ thất bại");
+      return err
+    }
   }
 
   const handleSubmitEdit = async () => {
@@ -87,19 +150,19 @@ export default function ProfilePage() {
       [field]: value
     }));
   }
-
+  
   useEffect(() => {
     const takeUserInfo = async () => {
       try {
         if (!user) {
-          console.log("Không tìm thấy người dùng hiện tại ở hệ thống")
+          console.log("Không tìm thấy người dùng hiện tại")
           return;
         }
         const currentUserId = user.id
         const res = await api.get(`/users/getMyProfile/${currentUserId}`)
         const userData = res.data.user || res.data;
         setUserInfo(userData);
-        
+
         // cập nhât form data lên trước
         if (userData) {
           setFormData({
@@ -157,13 +220,37 @@ export default function ProfilePage() {
                   <div className={`relative bg-white rounded-2xl shadow-xl ${isMobile ? '-mt-8 mx-4 p-4' : '-mt-16 mx-8 p-8'}`}>
                     <div className={`flex ${isMobile ? 'flex-col items-center text-center' : 'flex-row items-end'} gap-6`}>
 
-                      <div className={`${isMobile ? '-mt-16' : '-mt-20'} relative`}>
-                        <Avatar className={`${isMobile ? 'h-24 w-24' : 'h-32 w-32'} border-4 border-white shadow-lg`}>
-                          <AvatarImage src={userInfo?.avatar} alt="User avatar" style={{ objectFit: "cover" }} />
+                      <div className={`${isMobile ? '-mt-16' : '-mt-20'} relative group`}>
+                        <Avatar 
+                          className={`${isMobile ? 'h-24 w-24' : 'h-32 w-32'} border-4 border-white shadow-lg`}
+                        >
+                          <AvatarImage src={formData.avatar || userInfo?.avatar} alt="User avatar" style={{ objectFit: "cover" }} />
                           <AvatarFallback className="text-2xl font-roboto-bold">
                             {userInfo.fullName.charAt(0).toUpperCase()}
                           </AvatarFallback>
                         </Avatar>
+                        
+                        <div 
+                          onClick={handleAvatarClick}
+                          className={`absolute inset-0 ${isMobile ? 'h-24 w-24' : 'h-32 w-32'} rounded-full bg-opacity-0 group-hover:bg-opacity-50 transition-all duration-200 flex items-center justify-center cursor-pointer z-10`}
+                        >
+                          <CameraIcon className="w-8 h-8 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
+                        </div>
+
+                        <input
+                          ref={fileInputRef}
+                          type="file"
+                          accept="image/*"
+                          onChange={handleAvatarUpload}
+                          className="hidden"
+                        />
+                        
+                        {/* load animation upload ảnh */}
+                        {isUploadingAvatar && (
+                          <div className={`absolute inset-0 ${isMobile ? 'h-24 w-24' : 'h-32 w-32'} rounded-full bg-opacity-50 flex items-center justify-center`}>
+                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
+                          </div>
+                        )}
                       </div>
 
                       <div className="flex-1">
@@ -172,12 +259,11 @@ export default function ProfilePage() {
                             <h1 className={`font-rosario-bold text-gray-900 ${isMobile ? 'text-xl' : 'text-3xl'}`}>
                               {userInfo.fullName}
                             </h1>
-                            <Badge 
-                              className={`font-roboto-bold ${
-                                userInfo.role === 'ADMIN' ? 'bg-red-500 hover:bg-red-600' :
+                            <Badge
+                              className={`font-roboto-bold ${userInfo.role === 'ADMIN' ? 'bg-red-500 hover:bg-red-600' :
                                 userInfo.role === 'INSTRUCTOR' ? 'bg-blue-500 hover:bg-blue-600' :
-                                'bg-green-500 hover:bg-green-600'
-                              } text-white ${isMobile ? 'text-xs' : 'text-sm'}`}
+                                  'bg-green-500 hover:bg-green-600'
+                                } text-white ${isMobile ? 'text-xs' : 'text-sm'}`}
                             >
                               {userInfo.role?.toUpperCase() || 'LEARNER'}
                             </Badge>
@@ -227,19 +313,19 @@ export default function ProfilePage() {
                               <Label className="text-gray-400 font-roboto text-sm mb-1">Họ và tên</Label>
                               <p className="font-roboto-bold text-gray-800">{userInfo.fullName}</p>
                             </div>
-                            
+
                             <div>
                               <Label className="text-gray-400 font-roboto text-sm mb-1">Vai trò</Label>
                               <p className="font-roboto-bold text-gray-800">{userInfo.role || 'Chưa có'}</p>
                             </div>
-                            
+
                             <div>
                               <Label className="text-gray-400 font-roboto text-sm mb-1">Trạng thái</Label>
                               <p className="font-roboto-bold text-green-600">
                                 {userInfo.isActive ? 'Đang hoạt động' : 'Không hoạt động'}
                               </p>
                             </div>
-                          
+
                             {userInfo.bio && (
                               <div className={isMobile ? '' : 'col-span-2'}>
                                 <Label className="text-gray-400 font-roboto text-sm mb-1">Tiểu sử</Label>
@@ -255,14 +341,11 @@ export default function ProfilePage() {
                         {/* thong tin ca nhan */}
                         <div className={`${isMobile ? 'bg-white rounded-2xl border-2 border-gray-200 shadow-sm pt-6 pl-6 pr-6 pb-6' : 'bg-white rounded-2xl border-2 border-gray-200 shadow-sm pt-6 pl-6 pr-6 pb-6'}`}>
                           <div className={`flex ${isMobile ? 'flex-row gap-0' : 'flex-row'} justify-between items-center mb-6`}>
-                            <h3 className="font-rosario-bold text-xl text-gray-900">Thông tin cá nhân</h3>
-                            
+                            <h3 className="font-rosario-bold text-xl text-gray-900 font-style">Thông tin cá nhân</h3>
+
                             <div className="flex gap-3">
                               {!isEditing ? (
-                                <Button 
-                                  onClick={() => setIsEditing(true)}
-                                  className="bg-[#371D8C] cursor-pointer hover:bg-[#2a1567] text-white font-roboto-bold"
-                                >
+                                <Button onClick={() => setIsEditing(true)} className="bg-[#371D8C] cursor-pointer hover:bg-[#2a1567] text-white font-roboto-bold" >
                                   Chỉnh sửa
                                 </Button>
                               ) : (
@@ -298,7 +381,7 @@ export default function ProfilePage() {
                               )}
                             </div>
                           </div>
-                          
+
                           <div className={`grid gap-6 ${isMobile ? 'grid-cols-1' : 'grid-cols-2'}`}>
                             <div>
                               <Label className="text-gray-400 font-roboto text-sm mb-1">Họ và tên</Label>
@@ -312,12 +395,12 @@ export default function ProfilePage() {
                                 <p className="font-roboto-bold text-gray-800">{userInfo.fullName}</p>
                               )}
                             </div>
-                            
+
                             <div>
                               <Label className="text-gray-400 font-roboto text-sm mb-1">Email</Label>
-                                <p className="font-roboto-bold text-gray-800">{userInfo.email}</p>
+                              <p className="font-roboto-bold text-gray-800">{userInfo.email}</p>
                             </div>
-                            
+
                             <div>
                               <Label className="text-gray-400 font-roboto text-sm mb-1">Số điện thoại</Label>
                               {isEditing ? (
@@ -332,7 +415,7 @@ export default function ProfilePage() {
                                 <p className="font-roboto-bold text-gray-800">{userInfo.phone || 'Chưa có'}</p>
                               )}
                             </div>
-                            
+
                             <div>
                               <Label className="text-gray-400 font-roboto text-sm mb-1">Ngày sinh</Label>
                               {isEditing ? (
@@ -348,7 +431,7 @@ export default function ProfilePage() {
                                 </p>
                               )}
                             </div>
-                            
+
                             <div>
                               <Label className="text-gray-400 font-roboto text-sm mb-1">Địa chỉ</Label>
                               {isEditing ? (
@@ -361,7 +444,7 @@ export default function ProfilePage() {
                                 <p className="font-roboto-bold text-gray-800">{userInfo.address || 'Chưa có'}</p>
                               )}
                             </div>
-                            
+
                             <div>
                               <Label className="text-gray-400 font-roboto text-sm mb-1">Thành phố</Label>
                               {isEditing ? (
@@ -374,7 +457,7 @@ export default function ProfilePage() {
                                 <p className="font-roboto-bold text-gray-800">{userInfo.city || 'Chưa có'}</p>
                               )}
                             </div>
-                            
+
                             <div>
                               <Label className="text-gray-400 font-roboto text-sm mb-1">Quốc gia</Label>
                               {isEditing ? (
@@ -387,7 +470,7 @@ export default function ProfilePage() {
                                 <p className="font-roboto-bold text-gray-800">{userInfo.nation || 'Chưa có'}</p>
                               )}
                             </div>
-                          
+
                             {(userInfo.bio || isEditing) && (
                               <div className={isMobile ? '' : 'col-span-2'}>
                                 <Label className="text-gray-400 font-roboto text-sm mb-1">Tiểu sử</Label>
@@ -423,24 +506,24 @@ export default function ProfilePage() {
                                 Thay đổi
                               </Button>
                             </div>
-                            
+
                             <div className="flex justify-between items-center pb-4 border-b">
                               <div>
                                 <p className="font-roboto-bold text-gray-800">Đăng nhập lần cuối</p>
                                 <p className="text-gray-400 font-roboto text-sm">
                                   {userInfo.last_login ? (() => {
-                                        const date = new Date(userInfo.last_login);
-                                        const dateStr = date.toLocaleDateString('vi-VN', {
-                                          year: 'numeric',
-                                          month: 'long',
-                                          day: 'numeric'
-                                        });
-                                        const timeStr = date.toLocaleTimeString('vi-VN', {
-                                          hour: '2-digit',
-                                          minute: '2-digit'
-                                        });
-                                        return `${dateStr}, ${timeStr}`;
-                                      })()
+                                    const date = new Date(userInfo.last_login);
+                                    const dateStr = date.toLocaleDateString('vi-VN', {
+                                      year: 'numeric',
+                                      month: 'long',
+                                      day: 'numeric'
+                                    });
+                                    const timeStr = date.toLocaleTimeString('vi-VN', {
+                                      hour: '2-digit',
+                                      minute: '2-digit'
+                                    });
+                                    return `${dateStr}, ${timeStr}`;
+                                  })()
                                     : 'Chưa có thông tin'
                                   }
                                 </p>
