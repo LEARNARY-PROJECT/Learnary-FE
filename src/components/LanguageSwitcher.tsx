@@ -78,7 +78,6 @@ export default function LanguageSwitcherSlide() {
         )}
       </div>
 
-      {/* Chữ */}
       <div
         className="absolute top-1/2 -translate-y-1/2 text-sm font-medium transition-transform duration-500 ease-in-out whitespace-nowrap"
         style={{

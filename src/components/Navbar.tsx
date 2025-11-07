@@ -10,12 +10,12 @@ import {
   UserIcon,
   ArrowRightOnRectangleIcon,
 } from "@heroicons/react/24/outline";
-
+import { toast } from "sonner"
 import { useTranslations } from "next-intl";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { useAuth } from "@/app/context/AuthContext";
 import Image from 'next/image'
-
+import { useRouter } from "next/navigation";
 export const NavbarLinks = () => {
   const t = useTranslations("Navbar");
 
@@ -40,12 +40,22 @@ export const NavbarLinks = () => {
 };
 
 function Navbar() {
+  const router = useRouter();
   const isMobile = useIsMobile();
   const links = NavbarLinks();
   const [isOpen, setIsOpen] = useState(false);
   const { isLoggedIn, user, logout, isLoading } = useAuth();
   const t = useTranslations("Navbar");
-
+  async function handleLogout(): Promise<void> {
+    try {
+       await logout()
+      router.push("/")
+    } catch (error) {
+      console.error("Đã xảy ra lỗi:", error)
+      toast.error("Lỗi khi đăng xuất, vui lòng thử lại sau!")
+      throw new Error("Không thể đăng xuất do có lỗi!")
+    }
+  }
   const renderAuthLinks = () => {
     if (isLoading) {
       return <div className="h-6 w-24 animate-pulse rounded bg-gray-200" />;
@@ -54,26 +64,32 @@ function Navbar() {
       return (
         <>
           <Link href="/profile" title={user.fullName}>
-            <UserIcon className="h-6 w-6 cursor-pointer hover:text-blue-600" />
+            <div className="w-fit h-fit hover:bg-gray-900 p-2 rounded-full group transition duration-200 ease-in-out">
+              <UserIcon className="h-6 w-6 cursor-pointer group-hover:text-white transition duration-200 ease-in-out" />
+            </div>
           </Link>
           <Link href="/cart" title={"Giỏ hàng"}>
             <ShoppingBagIcon className="h-6 w-6 cursor-pointer " />
           </Link>
-          <Link href="/logout" onClick={logout} title={t("logout")}>
+          <Link href="/logout" onClick={handleLogout} title={t("logout")}>
             <ArrowRightOnRectangleIcon className="h-6 w-6 cursor-pointer hover:text-red-600" />
           </Link>
-            <Link href="/changeLanguage" title={"Đổi ngôn ngữ"}>
-            <LanguageSwitcher />
+          <Link href="/changeLanguage" title={"Đổi ngôn ngữ"}>
+
           </Link>
+          <LanguageSwitcher />
         </>
       );
     }
 
     return (
       <>
-        <Link href="/login" title={t("login")}>
-          <UserIcon className="h-6 w-6 cursor-pointer hover:text-blue-600" />
+        <Link href="/login" title={t("login")} className="hover:bg-gray-200 rounded">
+          <div className="w-fit h-fit hover:bg-gray-200 p-1 rounded">
+            <UserIcon className="h-6 w-6 cursor-pointer hover:text-blue-60" />
+          </div>
         </Link>
+        <LanguageSwitcher />
       </>
     );
   };
@@ -146,7 +162,7 @@ function Navbar() {
           </div>
 
           <div>
-           
+
           </div>
         </div>
       )}
