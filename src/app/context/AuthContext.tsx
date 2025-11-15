@@ -9,7 +9,7 @@ import React, {
   useCallback,
 } from 'react';
 import { jwtDecode } from 'jwt-decode'; // npm install jwt-decode
-
+import api from '@/app/lib/axios';
 interface AuthUser {
   id: string;
   email: string;
@@ -22,7 +22,7 @@ interface AuthContextType {
   token: string | null;
   isLoggedIn: boolean;
   isLoading: boolean; 
-  login: (accessToken: string) => AuthUser | null;
+  login: (accessToken: string) => void;
   logout: () => void;
 }
 
@@ -32,16 +32,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true); 
+
   useEffect(() => {
-    const storedToken = localStorage.getItem('authToken');
-    if (storedToken) {
+    const checkAuthOnLoad = async () => {
       try {
-        const decodedUser = jwtDecode<AuthUser>(storedToken);
+        const response = await api.post('/auth/refresh');
+        const { accessToken } = response.data;
+      
+        const decodedUser = jwtDecode<AuthUser>(accessToken);
         setUser(decodedUser);
-        setToken(storedToken);
-      } catch (error: unknown) {
-        console.error("Lỗi giải mã token:", error);
-        localStorage.removeItem('authToken');
+        setToken(accessToken);
+        sessionStorage.setItem('accessToken', accessToken); 
+      } catch (error) {
+        setUser(null);
+        setToken(null);
+        sessionStorage.removeItem('accessToken'); 
+        console.error("Không thể refresh token khi tải trang:", error);
+      } finally {
+        setIsLoading(false);
       }
     };
     checkAuthOnLoad();  
@@ -54,34 +62,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } catch (error) {
       console.error("Lỗi logout:", error);
     } finally {
+      // Xóa data sessionStorage và state
       sessionStorage.removeItem('accessToken');
       setUser(null);
       setToken(null);
       window.location.href = '/';
     }
-    setIsLoading(false); 
   }, []);
 
-  const login = useCallback((newAccessToken: string): AuthUser | null => {
+  const login = useCallback((newAccessToken: string) => {
     try {
-      localStorage.setItem('authToken', newToken);
-      const decodedUser = jwtDecode<AuthUser>(newToken);
+      const decodedUser = jwtDecode<AuthUser>(newAccessToken);
       setUser(decodedUser);
       setToken(newAccessToken);
       sessionStorage.setItem('accessToken', newAccessToken);
-      return decodedUser;
     } catch (error) {
       console.error("Lỗi giải mã token:", error);
       logout();
-      return null;
     }
-  }, []);
-
-  const logout = useCallback(() => {
-    localStorage.removeItem('authToken');
-    setUser(null);
-    setToken(null);
-  }, []);
+  }, [logout]);
+  
 
   return (
     <AuthContext.Provider value={{ 
@@ -89,7 +89,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       token, 
       isLoggedIn: !!user,
       isLoading,
-      login, 
+      login: login,
       logout 
     }}>
       {children}
