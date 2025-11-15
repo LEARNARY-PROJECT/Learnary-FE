@@ -8,7 +8,7 @@ export default function AuthCallbackPage() {
   const router = useRouter();
   const searchParams = useSearchParams(); 
   const { login } = useAuth(); 
-  /* 2 CÁI HOOK useEffect, useState, useCallBack*/
+
   useEffect(() => {
     const token = searchParams.get('token');
 
