@@ -33,7 +33,7 @@ export default function LoginForm() {
 
         try {
             const response = await api.post(`/auth/login`, { email, password });
-            const user = login(response.data.accessToken);
+            const user = login(response.data.accessToken); 
             if (user?.role === "ADMIN" && pathname.includes("/admin/login")) {
                 toast.success("Đăng nhập thành công!");
                 window.location.href = '/admin/dashboard';

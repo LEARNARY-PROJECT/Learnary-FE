@@ -1,7 +1,7 @@
 "use client"
 
 import { toast } from "sonner"
-type ToasterConfirmOptions = {
+type ToasterConfirmProps = {
   title?: string
   description?: string
   confirmText?: string
@@ -14,7 +14,7 @@ export function ToasterConfirm({
   confirmText = "Đồng ý",
   cancelText = "Huỷ",
   onConfirm,
-}: ToasterConfirmOptions) {
+}: ToasterConfirmProps) {
   toast.custom((t) => (
     <div className="flex flex-col gap-3 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 rounded-lg shadow-lg p-4 min-w-[320px] border">
       <div className="font-semibold text-base">{title}</div>

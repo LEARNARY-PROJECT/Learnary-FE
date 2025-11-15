@@ -8,17 +8,14 @@ export default function AuthCallbackPage() {
   const router = useRouter();
   const searchParams = useSearchParams(); 
   const { login } = useAuth(); 
-
   useEffect(() => {
-    const token = searchParams.get('token');
+    const accessToken = searchParams.get('accessToken');
 
-    if (token) {
-      // LƯU TOKEN VÀO TRÌNH DUYỆT
-      localStorage.setItem('authToken', token);
-      login(token); 
-      router.push('/');
+    if (accessToken) {
+      login(accessToken); 
+      router.replace('/');
     } else {
-      router.push('/login?error=callback_failed');
+      router.replace('/login?error=callback_failed');
     }
   }, [router, searchParams, login]);
 

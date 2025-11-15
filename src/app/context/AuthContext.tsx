@@ -22,9 +22,10 @@ interface AuthContextType {
   token: string | null;
   isLoggedIn: boolean;
   isLoading: boolean; 
-  login: (accessToken: string) => void;
+  login: (accessToken: string) => AuthUser | null;
   logout: () => void;
 }
+
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -76,9 +77,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(decodedUser);
       setToken(newAccessToken);
       sessionStorage.setItem('accessToken', newAccessToken);
+      return decodedUser;
     } catch (error) {
       console.error("Lỗi giải mã token:", error);
       logout();
+      return null;
     }
   }, [logout]);
   

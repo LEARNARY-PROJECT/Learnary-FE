@@ -33,7 +33,7 @@ export type LessonData = {
     updatedAt?: string
 }
 
-type LessonListProps = {
+export type LessonListProps = {
     items?: LessonRawData[]
     currentId?: string
     totalCount?: number
@@ -43,7 +43,7 @@ type LessonListProps = {
 const LessonList: React.FC<LessonListProps> = ({
     items = ListLessonRaw as LessonRawData[],
     currentId,
-    totalCount,
+    /* totalCount, */
     emptyState = "Không có bài học nào"
 }) => {
 
@@ -77,26 +77,11 @@ const LessonList: React.FC<LessonListProps> = ({
         )
     }
     return (
-        <div className="container py-4 flex flex-col px-5 w-fit ">
-
-            <div className="flex justify-between">
-                <div className="mb-4 flex justify-end">
-                    <p className="text-sm text-gray-600">
-                        {totalCount || items.length} bài học
-                    </p>
-                </div>
-                <div className="rounded-lg">
-                    <p className="text-sm text-gray-600">
-                        Đã hoàn thành: {items.filter(l => l.is_completed).length}/{items.length}
-                    </p>
-                </div>
-            </div>
-
-            <div className="flex flex-col gap-3">
+        <div className="container flex flex-col px-5 w-fit ">
+            <div className="flex flex-col gap-1">
                 {items.map((lesson) => (
                     <Lesson
                         key={lesson.lesson_id}
-
                         lesson_id={lesson.lesson_id}
                         title={lesson.title}
                         videoUrl={lesson.video_url}
@@ -116,8 +101,6 @@ const LessonList: React.FC<LessonListProps> = ({
                     />
                 ))}
             </div>
-
-
         </div>
     )
 }

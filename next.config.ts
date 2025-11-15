@@ -1,14 +1,10 @@
+import { withNextVideo } from "next-video/process";
 import type { NextConfig } from "next";
 import createNextIntlPlugin from "next-intl/plugin";
 
 
 const nextConfig: NextConfig = {
-  /* config options here */
   images: {
-    // Cách cũ (đơn giản):
-    // domains: ["images.unsplash.com", "assets.aceternity.com", "learnary-courses.s3.ap-southeast-2.amazonaws.com"],
-
-    // Cách mới (khuyên dùng, bảo mật hơn):
     remotePatterns: [
       {
         protocol: 'https',
@@ -20,12 +16,12 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: 'https',
-        hostname: 'learnary-courses.s3.ap-southeast-2.amazonaws.com',
-        port: '',
-        pathname: '/**', // Cho phép tất cả đường dẫn con từ S3 bucket này
+        hostname: 'example.com',
       },
-      // Thêm các domain khác nếu cần (ví dụ avatar Google)
-      // { protocol: 'https', hostname: 'lh3.googleusercontent.com' },
+      {
+        protocol:'https',
+        hostname:'learnary-courses.s3.ap-southeast-2.amazonaws.com'
+      }
     ],
   },
   // không cần khai báo i18n này nữa vì App Router của NextJS 13+ đã có cách xử lý đa ngô ngữ i18n mới, không cần cấu hình trong này như Pages Router nữa.
@@ -45,4 +41,4 @@ const nextConfig: NextConfig = {
 };
 
 const withNextIntl = createNextIntlPlugin();
-export default withNextIntl(nextConfig);
+export default withNextVideo(withNextIntl(nextConfig));

@@ -68,7 +68,6 @@ const SingleCourseCard: React.FC<SingleCourseCardProps> = ({ course }) => {
 
   const buttonWrapperClass = `w-full pl-2 ${isMobile ? "flex justify-end" : "flex justify-end pr-2"}`;
 
-  // Kích thước ảnh
   const imageWidth = 350;
   const imageHeight = isMobile ? 220 : 200;
 
@@ -92,7 +91,6 @@ const SingleCourseCard: React.FC<SingleCourseCardProps> = ({ course }) => {
                 {dataCourse.category_id}
               </Badge>
             </div>
-
             <div className="flex flex-col gap-4 mt-2">
               <div className="flex flex-col">
                 <div className={headerWrapperClass}>
@@ -122,13 +120,12 @@ const SingleCourseCard: React.FC<SingleCourseCardProps> = ({ course }) => {
                   </h3>
                 </div>
               </div>
-
               <div className="course-card-price-container flex justify-end font-roboto-condensed text-black-700 text-3xl">
                 {formatPriceVND(dataCourse.price)}
               </div>
               <div className={buttonWrapperClass}>
                 <Button asChild>
-                  <Link href={`/courses/${dataCourse.slug}`}>
+                  <Link /* href={`/courses/${dataCourse.slug}`} */ href={`/course-detail`}>
                     Chi tiết khoá học
                   </Link>
                 </Button>
@@ -136,7 +133,6 @@ const SingleCourseCard: React.FC<SingleCourseCardProps> = ({ course }) => {
             </div>
           </div>
         </TooltipTrigger>
-
         <TooltipContent side="top" className="bg-white text-black p-2 rounded-md border-2">
           <p>Trạng thái: {dataCourse.status}</p>
           <p>Giá: {dataCourse.price.toLocaleString("vi-VN")} ₫</p>

@@ -1,47 +1,52 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import axios, { isAxiosError } from 'axios';
-import { useAuth } from '@/app/context/AuthContext'; 
+//import { useRouter } from 'next/navigation';
+import { isAxiosError } from 'axios';
+import api from '@/app/lib/axios';
+import { useAuth } from '@/app/context/AuthContext';
 import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { } from "lucide-react"
+import Image from "next/image"
 
-const BACKEND_URL = process.env.BACKEND_URL;
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const router = useRouter();
-  const { login } = useAuth();
+  //const router = useRouter();
+  const { login, isLoggedIn, isLoading: isAuthLoading } = useAuth();
+  const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Xử lý đăng nhập bằng Email/Pass
+  useEffect(() => {
+    if (!isAuthLoading) {
+      if (isLoggedIn) {
+        window.location.href = '/';
+      }
+    }
+  }, [isLoggedIn, isAuthLoading]);
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setIsLoading(true);
+    setIsSubmitting(true);
     setError(null);
-
     try {
-      // Gọi API của BE
-      const response = await axios.post(`${BACKEND_URL}/api/auth/login`, { 
-        email, 
-        password 
+      const response = await api.post(`/auth/login`, {
+        email,
+        password
       });
-      login(response.data.token); 
-      
-      router.push('/');
+      login(response.data.accessToken); 
+      window.location.href = '/';
     } catch (err) {
       if (isAxiosError(err)) {
         setError(err.response?.data?.message || 'Email hoặc mật khẩu không đúng.');
@@ -49,33 +54,32 @@ export default function LoginPage() {
         setError('Không thể kết nối. Vui lòng thử lại.');
       }
     } finally {
-      setIsLoading(false);
+      setIsSubmitting(false);
     }
   };
 
   // Xử lý đăng nhập Google
   const handleGoogleSignIn = () => {
-    setIsLoading(true);
+    setIsSubmitting(true);
     window.location.href = `${BACKEND_URL}/api/auth/google`;
+
   };
+
+  if (isAuthLoading || isLoggedIn) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className='text-lg font-medium'>Đang tải...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-950">
       <Card className="w-full max-w-sm">
         <form onSubmit={handleSubmit}>
-          
           <CardHeader className="pb-4">
-            <CardTitle className="text-2xl">Đăng nhập</CardTitle>
-            <CardDescription>
-              Nhập email và mật khẩu của bạn
-            </CardDescription>
-            <div className="pt-2 text-sm">
-              <Link href="/register" className="hover:underline">
-                Chưa có tài khoản? Đăng ký
-              </Link>
-            </div>
+            <CardTitle className="text-2xl text-center">Đăng nhập</CardTitle>
           </CardHeader>
-
           <CardContent className="flex flex-col gap-6">
             <div className="grid gap-2">
               <Label htmlFor="email">Email</Label>
@@ -86,7 +90,7 @@ export default function LoginPage() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                disabled={isLoading}
+                disabled={isSubmitting}
               />
             </div>
             <div className="grid gap-2">
@@ -99,13 +103,13 @@ export default function LoginPage() {
                   Quên mật khẩu?
                 </Link>
               </div>
-              <Input 
-                id="password" 
-                type="password" 
-                required 
+              <Input
+                id="password"
+                type="password"
+                required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                disabled={isLoading}
+                disabled={isSubmitting}
                 placeholder="••••••••"
               />
             </div>
@@ -115,22 +119,28 @@ export default function LoginPage() {
           </CardContent>
 
           <CardFooter className="flex-col gap-2 pt-6">
-            <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? 'Đang đăng nhập...' : 'Đăng nhập'}
+            <Button type="submit" className="w-full cursor-pointer" disabled={isSubmitting}>
+              {isSubmitting ? 'Đang đăng nhập...' : 'Đăng nhập'}
             </Button>
 
-            <Button 
-              variant="outline" 
-              className="w-full"
+            <Button
+              variant="outline"
+              className="w-full cursor-pointer"
               type="button"
-              disabled={isLoading}
+              disabled={isSubmitting}
               onClick={handleGoogleSignIn}
             >
+              <Image src={'/Logo/icons8-google-48.png'} alt='Google Logo' width={25} height={25}></Image>
               Đăng nhập với Google
             </Button>
+            <div className="pt-2 text-sm">
+              <Link href="/register" className="hover:underline">
+                Chưa có tài khoản? Đăng ký tại đây!
+              </Link>
+            </div>
           </CardFooter>
         </form>
       </Card>
     </div>
   );
-}
+} 
