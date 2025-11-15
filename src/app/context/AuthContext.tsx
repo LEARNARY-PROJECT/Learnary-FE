@@ -22,11 +22,7 @@ interface AuthContextType {
   token: string | null;
   isLoggedIn: boolean;
   isLoading: boolean; 
-<<<<<<< Updated upstream
-  login: (token: string) => void;
-=======
   login: (accessToken: string) => AuthUser | null;
->>>>>>> Stashed changes
   logout: () => void;
 }
 
@@ -47,8 +43,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         console.error("Lỗi giải mã token:", error);
         localStorage.removeItem('authToken');
       }
-<<<<<<< Updated upstream
-=======
     };
     checkAuthOnLoad();  
   }, []);
@@ -64,27 +58,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(null);
       setToken(null);
       window.location.href = '/';
->>>>>>> Stashed changes
     }
     setIsLoading(false); 
   }, []);
 
-<<<<<<< Updated upstream
-  const login = useCallback((newToken: string) => {
-=======
   const login = useCallback((newAccessToken: string): AuthUser | null => {
->>>>>>> Stashed changes
     try {
       localStorage.setItem('authToken', newToken);
       const decodedUser = jwtDecode<AuthUser>(newToken);
       setUser(decodedUser);
-<<<<<<< Updated upstream
-      setToken(newToken);
-=======
       setToken(newAccessToken);
       sessionStorage.setItem('accessToken', newAccessToken);
       return decodedUser;
->>>>>>> Stashed changes
     } catch (error) {
       console.error("Lỗi giải mã token:", error);
       logout();
