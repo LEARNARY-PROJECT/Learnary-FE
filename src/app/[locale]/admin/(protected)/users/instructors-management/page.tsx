@@ -37,7 +37,9 @@ import {
   Inactive = "Inactive",
   Suspended = "Suspended"
 } 
-export const UserSchema = z.object({
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const _UserSchema = z.object({
   user_id: z.string(),
   email: z.string().email(),
   fullName: z.string(),
@@ -55,9 +57,9 @@ export const UserSchema = z.object({
   isActive: z.boolean(),
 });
 
-export type User = z.infer<typeof UserSchema>;
+type User = z.infer<typeof _UserSchema>;
 
-export type Instructor = User & {
+type Instructor = User & {
   totalCourses?: number;
   totalStudents?: number;
   rating?: number;
