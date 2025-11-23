@@ -208,21 +208,31 @@ export default function InstructorManagement() {
           <Button
             variant={filterActive === null ? "default" : "outline"}
             onClick={() => setFilterActive(null)}
+            className='cursor-pointer hover:bg-gray-300'
           >
             Tất cả
           </Button>
           <Button
             variant={filterActive === true ? "default" : "outline"}
             onClick={() => setFilterActive(true)}
+            className='cursor-pointer hover:bg-gray-300'
           >
             Đang hoạt động
           </Button>
           <Button
             variant={filterActive === false ? "default" : "outline"}
             onClick={() => setFilterActive(false)}
+            className='cursor-pointer hover:bg-gray-300'
           >
             Khác / Chờ duyệt
           </Button>
+          {/* <Button
+            variant={"outline"}
+            onClick={()=> fetchInstructors()}
+            className='cursor-pointer hover:bg-gray-300'
+          >
+            <RefreshCcw></RefreshCcw> Reload
+          </Button> */}
         </div>
       </div>
 
