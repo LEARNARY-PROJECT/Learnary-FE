@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { z } from "zod";
 import api from "@/app/lib/axios";
+import { formatDate, formatDateForInput } from "@/utils/datetime";
 import {
    Table,
    TableBody,
@@ -47,7 +48,7 @@ import {
 import { toast } from "sonner"
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-const _UserSchema = z.object({
+const UserSchema = z.object({
    user_id: z.string(),
    email: z.string().email(),
    fullName: z.string(),
@@ -65,7 +66,51 @@ const _UserSchema = z.object({
    isActive: z.boolean(),
 });
 
-type User = z.infer<typeof _UserSchema>;
+const EditUserSchema = z.object({
+   fullName: z.string()
+      .min(2, "Tên phải có ít nhất 2 ký tự")
+      .max(100, "Tên không được quá 100 ký tự"),
+   phone: z.string()
+      .regex(/^[0-9]{10,11}$/, "Số điện thoại phải có 10-11 chữ số")
+      .nullable()
+      .optional()
+      .or(z.literal("")),
+   dateOfBirth: z.string()
+      .refine((date) => {
+         if (!date) return true;
+         const birthDate = new Date(date);
+         const today = new Date();
+         const age = today.getFullYear() - birthDate.getFullYear();
+         return age >= 13 && age <= 120;
+      }, "Tuổi phải từ 13 đến 120")
+      .nullable()
+      .optional(),
+   address: z.string()
+      .max(200, "Địa chỉ không được quá 200 ký tự")
+      .nullable()
+      .optional(),
+   city: z.string()
+      .max(50, "Tên thành phố không được quá 50 ký tự")
+      .nullable()
+      .optional(),
+   country: z.string()
+      .max(50, "Tên quốc gia không được quá 50 ký tự")
+      .nullable()
+      .optional(),
+   nation: z.string()
+      .max(50, "Quốc tịch không được quá 50 ký tự")
+      .nullable()
+      .optional(),
+   bio: z.string()
+      .max(500, "Mô tả không được quá 500 ký tự")
+      .nullable()
+      .optional(),
+   gender: z.enum(["MALE", "FEMALE", "OTHER"]),
+   role: z.enum(["ADMIN", "INSTRUCTOR", "LEARNER"]),
+   isActive: z.boolean(),
+});
+
+type User = z.infer<typeof UserSchema>;
 
 export default function UserManagement() {
    const [users, setUser] = useState<User[]>([]);
@@ -79,6 +124,9 @@ export default function UserManagement() {
    const [editData, setEditData] = useState<Partial<User>>({});
    const [avatarFile, setAvatarFile] = useState<File | null>(null);
    const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+   const [dateInputValue, setDateInputValue] = useState<string>("");
+   const [avatarTimestamp, setAvatarTimestamp] = useState<number>(Date.now());
+   
    useEffect(() => {
       fetchUsers();
    }, []);
@@ -86,14 +134,17 @@ export default function UserManagement() {
    const openDialog = (user: User) => {
       setSelecteduser(user);
       setEditData(user);
+      setDateInputValue(formatDateForInput(user.dateOfBirth));
       setEditMode(false); 
       setIsDialogOpen(true);
       setAvatarFile(null);
       setAvatarPreview(null);
+      setAvatarTimestamp(Date.now());
    }
    const closeDialog = () => {
       setSelecteduser(null);
       setEditData({});
+      setDateInputValue("");
       setEditMode(false);
       setIsDialogOpen(false);
       setAvatarFile(null);
@@ -112,31 +163,31 @@ export default function UserManagement() {
             fullName: string,
             gender: string,
             role: string,
-            phone: null,
-            avatar: string,
-            dateOfBirth: null,
-            address: null,
-            city: null,
-            country: null,
-            nation: null,
-            bio: null,
+            phone: string | number | null,
+            avatar: string | null,
+            dateOfBirth: string | null,
+            address: string | null,
+            city: string | null,
+            country: string | null,
+            nation: string | null,
+            bio: string | null,
             isActive: boolean,
-            last_login: null,
+            last_login: string | null,
          }) => ({
-            user_id: item.user_id.trim(),
-            email: item.email.trim(),
-            fullName: item.fullName,
-            avatar: item.avatar,
-            role: item.role,
-            gender: item.gender,
-            phone: null,
-            dateOfBirth: null,
-            address: null,
-            city: null,
-            country: null,
-            nation: null,
-            bio: null,
-            last_login: null,
+            user_id: item.user_id?.trim() || "",
+            email: item.email?.trim() || "",
+            fullName: item.fullName?.trim() || "",
+            avatar: item.avatar?.trim() || null,
+            role: item.role?.trim() || "",
+            gender: item.gender?.trim() || "",
+            phone: typeof item.phone === 'string' ? item.phone.trim() : item.phone,
+            dateOfBirth: item.dateOfBirth?.trim() || null,
+            address: item.address?.trim() || null,
+            city: item.city?.trim() || null,
+            country: item.country?.trim() || null,
+            nation: item.nation?.trim() || null,
+            bio: item.bio?.trim() || null,
+            last_login: item.last_login?.trim() || null,
             isActive: item.isActive,
          }));
          setUser(mappedData);
@@ -178,8 +229,36 @@ export default function UserManagement() {
 
    const submitChange = async () => {
       if (!selectedUser) return;
+   
       try {
+         const dataToValidate = {
+            fullName: (editData.fullName || selectedUser.fullName)?.trim() || "",
+            phone: editData.phone === null || editData.phone === undefined ? "" : String(editData.phone).trim(),
+            dateOfBirth: editData.dateOfBirth?.trim() || null,
+            address: (editData.address || "")?.trim() || "",
+            city: (editData.city || "")?.trim() || "",
+            country: (editData.country || "")?.trim() || "",
+            nation: (editData.nation || "")?.trim() || "",
+            bio: (editData.bio || "")?.trim() || "",
+            gender: editData.gender || selectedUser.gender,
+            role: editData.role || selectedUser.role,
+            isActive: editData.isActive !== undefined ? editData.isActive : selectedUser.isActive,
+         };
+         /* parse là phương thức được cấp bởi zod để validate dữ liệu theo Schema đã khai báo trước. */
+         EditUserSchema.parse(dataToValidate);
+         Object.assign(editData, {
+            fullName: dataToValidate.fullName,
+            phone: dataToValidate.phone || null,
+            dateOfBirth: dataToValidate.dateOfBirth,
+            address: dataToValidate.address || null,
+            city: dataToValidate.city || null,
+            country: dataToValidate.country || null,
+            nation: dataToValidate.nation || null,
+            bio: dataToValidate.bio || null,
+         });
+         
          setIsSaving(true);
+         
          if (avatarFile) {
             const formData = new FormData();
             formData.append('avatar', avatarFile);
@@ -191,41 +270,52 @@ export default function UserManagement() {
             const newAvatarUrl = avatarResponse.data.data?.avatar || avatarResponse.data.avatar;
             if (newAvatarUrl) {
                editData.avatar = newAvatarUrl;
+               setAvatarTimestamp(Date.now());
             }
          }
+         
+         if(editData.dateOfBirth) {
+            const date = new Date(editData.dateOfBirth);
+            if(!isNaN(date.getTime())) {
+               editData.dateOfBirth=date.toISOString();
+            } else {
+               delete editData.dateOfBirth;
+            }
+         }
+         
          if (editData.role && editData.role !== selectedUser.role) {
             await api.patch(`/users/update-role/${selectedUser.user_id}`, {
                role: editData.role
             });
          }
+         /* object.keys là phương thức lấy keys của 1 object của javascript */
          // eslint-disable-next-line @typescript-eslint/no-unused-vars
-         const { role: _role, avatar: string, ...otherData } = editData;
+         const { role: role, avatar: string, ...otherData } = editData;
          if (Object.keys(otherData).length > 0) {
             await api.patch(`/users/update-info/${selectedUser.user_id}`, otherData);
          }
-
          setUser((prev) =>
             prev.map((u) =>
                u.user_id === selectedUser.user_id ? { ...u, ...editData } : u
             )
          );
          setSelecteduser((prev) => (prev ? { ...prev, ...editData } : null));
-
          toast.success("Lưu thông tin tài khoản thành công");
-
          setEditMode(false);
-         setIsDialogOpen(false);
          setAvatarFile(null);
          setAvatarPreview(null);
-
-         fetchUsers();
 
          setIsSaving(false)
 
       } catch (error) {
+         setIsSaving(false);
+         if (error instanceof z.ZodError) {
+            const firstError = error.issues[0];
+            toast.error(firstError.message);
+            return;
+         }
          console.error("Lỗi khi lưu thông tin người dùng", error);
          toast.error("Lưu thông tin tài khoản thất bại");
-         setIsSaving(false)
       }
    }
    const filteredUsers = users.filter((user) => {
@@ -312,7 +402,11 @@ export default function UserManagement() {
                         <TableCell>
                            <div className="flex items-center gap-3">
                               <Avatar className="h-10 w-10 shrink-0">
-                                 <AvatarImage src={user.avatar || undefined} className="object-cover" />
+                                 <AvatarImage 
+                                 /* đổi params để báo với trình duyệt là url này thay đổi, nếu không có thì trình duyệt sẽ lấy cache url của ảnh cũ, không hiển thị ảnh mới */
+                                    src={user.avatar ? `${user.avatar}?t=${Date.now()}` : undefined} 
+                                    className="object-cover" 
+                                 />
                                  <AvatarFallback>
                                     {user.fullName.charAt(0).toUpperCase()}
                                  </AvatarFallback>
@@ -375,17 +469,23 @@ export default function UserManagement() {
          </div>
 
          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogContent className="max-w-lg w-full">
+            <DialogContent className="max-w-6xl! w-[95vw] max-h-[90vh] overflow-y-auto sm:max-w-6xl">
                <DialogHeader>
                   <DialogTitle>Thông tin tài khoản</DialogTitle>
                </DialogHeader>
                <div>
                   {selectedUser ? (
                      <div className="space-y-4">
-                        <div className="flex items-center gap-4">
+                        <div className="flex sm:flex-row items-start sm:items-center gap-4">
                            <div className="relative">
                               <Avatar className="w-16 h-16 shrink-0">
-                                 <AvatarImage src={avatarPreview || selectedUser.avatar || undefined} className="object-cover" />
+                                 <AvatarImage 
+                                    src={
+                                       avatarPreview || 
+                                       (selectedUser.avatar ? `${selectedUser.avatar}?t=${avatarTimestamp}` : undefined)
+                                    } 
+                                    className="object-cover" 
+                                 />
                                  <AvatarFallback>
                                     {selectedUser.fullName.charAt(0).toUpperCase()}
                                  </AvatarFallback>
@@ -403,7 +503,7 @@ export default function UserManagement() {
                                  </Label>
                               )}
                            </div>
-                           <div className="flex-1">
+                           <div className="flex-1 w-full">
                               {!editMode ? (
                                  <div className="text-lg font-semibold">{selectedUser.fullName}</div>
                               ) : (
@@ -420,57 +520,186 @@ export default function UserManagement() {
                            </div>
                         </div>
 
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                           <div>
+                              <label className="block text-sm font-medium mb-1">Email</label>
+                              {!editMode ? (
+                                 <div className="text-gray-700">{selectedUser.email}</div>
+                              ) : (
+                                 <Input
+                                    type="email"
+                                    value={editData.email || ""}
+                                    disabled
+                                    onChange={(e) => handleChange("email", e.target.value)}
+                                 />
+                              )}
+                           </div>
+
+                           <div>
+                              <Label htmlFor="role" className="block text-sm font-medium mb-1">Vai trò</Label>
+                              {!editMode ? (
+                                 selectedUser.role === "ADMIN" ? (
+                                    <Badge variant="default" className="bg-red-600 cursor-default select-none">
+                                       ADMIN
+                                    </Badge>
+                                 ) : selectedUser.role === "INSTRUCTOR" ? (
+                                    <Badge variant="default" className="bg-blue-600 cursor-default select-none">
+                                       INSTRUCTOR
+                                    </Badge>
+                                 ) : (
+                                    <Badge variant="default" className="bg-green-600 cursor-default select-none">
+                                       LEARNER
+                                    </Badge>
+                                 )
+                              ) : (
+                                 <Select
+                                    value={editData.role || selectedUser.role}
+                                    onValueChange={(value) => handleChange("role", value)}
+                                 >
+                                    <SelectTrigger id="role">
+                                       <SelectValue placeholder="Chọn vai trò" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                       <SelectItem value="ADMIN">ADMIN</SelectItem>
+                                       <SelectItem value="INSTRUCTOR">INSTRUCTOR</SelectItem>
+                                       <SelectItem value="LEARNER">LEARNER</SelectItem>
+                                    </SelectContent>
+                                 </Select>
+                              )}
+                           </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                           <div>
+                              <Label htmlFor="gender" className="block text-sm font-medium mb-1">Giới tính</Label>
+                              {!editMode ? (
+                                 <div>{selectedUser.gender === "MALE" ? "Nam" : selectedUser.gender === "FEMALE" ? "Nữ" : "Khác"}</div>
+                              ) : (
+                                 <Select
+                                    value={editData.gender || selectedUser.gender}
+                                    onValueChange={(value) => handleChange("gender", value)}
+                                 >
+                                    <SelectTrigger id="gender">
+                                       <SelectValue placeholder="Chọn giới tính" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                       <SelectItem value="MALE">Nam</SelectItem>
+                                       <SelectItem value="FEMALE">Nữ</SelectItem>
+                                       <SelectItem value="OTHER">Khác</SelectItem>
+                                    </SelectContent>
+                                 </Select>
+                              )}
+                           </div>
+
+                           <div>
+                              <label className="block text-sm font-medium mb-1">Số điện thoại</label>
+                              {!editMode ? (
+                                 <div>{selectedUser.phone || "Chưa có"}</div>
+                              ) : (
+                                 <Input
+                                    type="tel"
+                                    value={editData.phone || ""}
+                                    onChange={(e) => handleChange("phone", e.target.value)}
+                                 />
+                              )}
+                           </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                           <div>
+                              <label className="block text-sm font-medium mb-1">Ngày sinh</label>
+                              {!editMode ? (
+                                 <div>{formatDate(selectedUser.dateOfBirth)}</div>
+                              ) : (
+                                 <Input
+                                    type="date"
+                                    value={dateInputValue}
+                                    onChange={(e) => {
+                                       setDateInputValue(e.target.value);
+                                       handleChange("dateOfBirth", e.target.value);
+                                    }}
+                                 />
+                              )}
+                           </div>
+
+                           <div>
+                              <label className="block text-sm font-medium mb-1">Trạng thái</label>
+                              {!editMode ? (
+                                 selectedUser.isActive ? (
+                                    <Badge variant={"default"} className="bg-green-600">
+                                       Đang mở
+                                    </Badge>
+                                 ) : (
+                                    <Badge variant={"destructive"} className="bg-red-600">
+                                       Tài khoản bị khoá
+                                    </Badge>
+                                 )
+                              ) : (
+                                 <select
+                                    className="w-full rounded-md border border-gray-300 p-2"
+                                    value={editData.isActive ? "true" : "false"}
+                                    onChange={(e) =>
+                                       handleChange("isActive", e.target.value === "true")
+                                    }
+                                 >
+                                    <option value="true">Đang mở</option>
+                                    <option value="false">Tài khoản bị khoá</option>
+                                 </select>
+                              )}
+                           </div>
+                        </div>
                         <div>
-                           <label className="block text-sm font-medium mb-1">Email</label>
+                           <label className="block text-sm font-medium mb-1">Địa chỉ</label>
                            {!editMode ? (
-                              <div className="text-gray-700">{selectedUser.email}</div>
+                              <div>{selectedUser.address || "Chưa có"}</div>
                            ) : (
                               <Input
-                                 type="email"
-                                 value={editData.email || ""}
-                                 disabled
-                                 onChange={(e) => handleChange("email", e.target.value)}
+                                 type="text"
+                                 value={editData.address || ""}
+                                 onChange={(e) => handleChange("address", e.target.value)}
                               />
                            )}
                         </div>
 
-                        <div>
-                           <Label htmlFor="role" className="block text-sm font-medium mb-1">Vai trò</Label>
-                           {!editMode ? (
-                              <Badge
-                                 variant={"default"}
-                                 className="cursor-default select-none"
-                              >
-                                 {selectedUser.role}
-                              </Badge>
-                           ) : (
-                              <Select
-                                 value={editData.role || selectedUser.role}
-                                 onValueChange={(value) => handleChange("role", value)}
-                              >
-                                 <SelectTrigger id="role">
-                                    <SelectValue placeholder="Chọn vai trò" />
-                                 </SelectTrigger>
-                                 <SelectContent>
-                                    <SelectItem value="ADMIN">ADMIN</SelectItem>
-                                    <SelectItem value="INSTRUCTOR">INSTRUCTOR</SelectItem>
-                                    <SelectItem value="LEARNER">LEARNER</SelectItem>
-                                 </SelectContent>
-                              </Select>
-                           )}
-                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                           <div>
+                              <label className="block text-sm font-medium mb-1">Thành phố</label>
+                              {!editMode ? (
+                                 <div>{selectedUser.city || "Chưa có"}</div>
+                              ) : (
+                                 <Input
+                                    type="text"
+                                    value={editData.city || ""}
+                                    onChange={(e) => handleChange("city", e.target.value)}
+                                 />
+                              )}
+                           </div>
 
-                        <div>
-                           <label className="block text-sm font-medium mb-1">Số điện thoại</label>
-                           {!editMode ? (
-                              <div>{selectedUser.phone || "Chưa có"}</div>
-                           ) : (
-                              <Input
-                                 type="tel"
-                                 value={editData.phone || ""}
-                                 onChange={(e) => handleChange("phone", e.target.value)}
-                              />
-                           )}
+                           <div>
+                              <label className="block text-sm font-medium mb-1">Quốc gia</label>
+                              {!editMode ? (
+                                 <div>{selectedUser.country || "Chưa có"}</div>
+                              ) : (
+                                 <Input
+                                    type="text"
+                                    value={editData.country || ""}
+                                    onChange={(e) => handleChange("country", e.target.value)}
+                                 />
+                              )}
+                           </div>
+
+                           <div>
+                              <label className="block text-sm font-medium mb-1">Quốc tịch</label>
+                              {!editMode ? (
+                                 <div>{selectedUser.nation || "Chưa có"}</div>
+                              ) : (
+                                 <Input
+                                    type="text"
+                                    value={editData.nation || ""}
+                                    onChange={(e) => handleChange("nation", e.target.value)}
+                                 />
+                              )}
+                           </div>
                         </div>
 
                         <div>
@@ -484,32 +713,6 @@ export default function UserManagement() {
                                  value={editData.bio || ""}
                                  onChange={(e) => handleChange("bio", e.target.value)}
                               />
-                           )}
-                        </div>
-
-                        <div>
-                           <label className="block text-sm font-medium mb-1">Trạng thái</label>
-                           {!editMode ? (
-                              selectedUser.isActive ? (
-                                 <Badge variant={"default"} className="bg-green-600">
-                                    Đang mở
-                                 </Badge>
-                              ) : (
-                                 <Badge variant={"destructive"} className="bg-red-600">
-                                    Tài khoản bị khoá
-                                 </Badge>
-                              )
-                           ) : (
-                              <select
-                                 className="w-full rounded-md border border-gray-300 p-2"
-                                 value={editData.isActive ? "true" : "false"}
-                                 onChange={(e) =>
-                                    handleChange("isActive", e.target.value === "true")
-                                 }
-                              >
-                                 <option value="true">Đang mở</option>
-                                 <option value="false">Tài khoản bị khoá</option>
-                              </select>
                            )}
                         </div>
 
@@ -539,6 +742,7 @@ export default function UserManagement() {
                                     className='cursor-pointer'
                                     onClick={() => {
                                        setEditData(selectedUser);
+                                       setDateInputValue(formatDateForInput(selectedUser.dateOfBirth));
                                        setEditMode(false);
                                     }}
                                  >
