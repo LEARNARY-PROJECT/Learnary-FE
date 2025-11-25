@@ -72,7 +72,7 @@ export default function EditCoursePage({ params }: { params: Promise<{ id: strin
     useEffect(() => {
         if (isAuthLoading) return;
 
-        if (!isLoggedIn || user?.role !== "INSTRUCTOR") {
+        if (!isLoggedIn || user?.role !== "INSTRUCTOR"&& user?.role !== "ADMIN") {
         alert('Bạn không có quyền truy cập trang này.');
         router.push(`/`); 
         return;
