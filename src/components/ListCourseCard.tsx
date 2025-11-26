@@ -58,9 +58,11 @@ const ListCourseCard: React.FC<ListCourseCardProps> = ({ title, courses }) => {
   ) : (
     <div>
       <div className="title w-full font-roboto-condensed-bold text-2xl pl-5 pb-5 pt-5">{title}</div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 p-5">
+      <div className="flex flex-wrap gap-4 p-2">
         {coursesData.map((course) => (
-          <SingleCourseCard key={course.course_id} course={course} />
+          <div key={course.course_id} className="w-full sm:w-1/2 lg:w-1/4">
+            <SingleCourseCard course={course} />
+          </div>
         ))}
       </div>
     </div>

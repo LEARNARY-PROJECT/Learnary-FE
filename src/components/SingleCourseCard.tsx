@@ -16,6 +16,8 @@ import {
 } from "lucide-react"
 import { formatPriceVND } from "@/utils/convert_price";
 import { Course } from "@/type/course.type";
+import { PLACEHOLDER_THUMBNAIL,DEFAULT_LANGUAGE } from "@/const/urls";
+
 interface SingleCourseCardProps {
   course: Course;
 }
@@ -44,11 +46,11 @@ const SingleCourseCard: React.FC<SingleCourseCardProps> = ({ course }) => {
       <Tooltip>
         <TooltipTrigger asChild>
           <div className={wrapperClass}>
-            <div className="relative border-2 rounded-2xl" style={{ height: imageHeight, width: "100%" }}>
+            <div className="relative" style={{ height: imageHeight, width: "100%" }}>
               <Image
                 width={`${imageWidth}`}
                 height={`${imageHeight}`}
-                src={dataCourse.thumbnail ?? "/default-thumbnail.jpg"}
+                src={dataCourse.thumbnail || PLACEHOLDER_THUMBNAIL}
                 alt={dataCourse.title ?? "Course thumbnail"}
                 className={imageClass}
               />
@@ -92,9 +94,9 @@ const SingleCourseCard: React.FC<SingleCourseCardProps> = ({ course }) => {
             </div>
           </div>
         </TooltipTrigger>
-        <TooltipContent side="top" className="bg-white text-black p-2 rounded-md border-2">
-          <p>Mô tả: {dataCourse.description || "Không có mô tả chi tiết"}</p>
-          <p>Ngôn ngữ: {(dataCourse.available_language ?? "Vietnamese")}</p>
+        <TooltipContent side="top" className="bg-white text-orange-600 p-2 font-roboto-bold rounded-md border-2">
+          <p>Chi tiết: {dataCourse.description || "Không có mô tả chi tiết"}</p>
+          <p>Ngôn ngữ khả dụng: {(dataCourse.available_language ?? DEFAULT_LANGUAGE)}</p>
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>
