@@ -34,7 +34,7 @@ export type Learner = {
 };
 
 export type InstructorStatus = 'Active' | 'Inactive' | 'Suspended';
-
+export type InstructorWithData = Instructor & { user? : User}
 export type Instructor = {
   instructor_id: string;
   user_id: string;

@@ -18,6 +18,7 @@ export type Course = {
   chapters?:Chapter[];
   category?:Category;
   instructor?:InstructorWithData;
+  level?:Level;
 }
 export type InstructorWithData = Instructor & { user? : User}
 export type Category = {
@@ -30,12 +31,17 @@ enum StatusCourse {
   Published = "Published",
   Archived = "Archived",
 }
+export type Level = {
+  level_id:string,
+  level_name:string,
+  slug:string,
+}
 export type Chapter = {
-    chapter_id:string,
-    course_id:string,
-    chapter_title?:string,
-    order_index?:number,
-    lessons?:Lesson[]
+  chapter_id:string,
+  course_id:string,
+  chapter_title?:string,
+  order_index?:number,
+  lessons?:Lesson[]
 }
 export type Lesson = {
     lesson_id:string,

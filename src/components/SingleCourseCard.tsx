@@ -85,7 +85,7 @@ const SingleCourseCard: React.FC<SingleCourseCardProps> = ({ course }) => {
                     <Heart className="text-pink-600 group-hover:text-white"></Heart>
                   </Button>
                   <Button asChild className="bg-pink-600 hover:bg-pink-500 transition-colors">
-                    <Link /* href={`/courses/${dataCourse.slug}`} */ href={`/course-detail`}>
+                    <Link href={`/course-detail/${dataCourse.slug}`}>
                       Học ngay
                     </Link>
                   </Button>
