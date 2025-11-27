@@ -62,7 +62,7 @@ export default function CourseDetailPage() {
     }
     const includesData = [
         {
-            icon:'PlayCircle',
+            icon: 'PlayCircle',
             text: courseData.description ?? "Chưa có mô tả khoá học"
         }
     ]
@@ -132,6 +132,7 @@ export default function CourseDetailPage() {
 
                     <div className="p-1 border rounded rounded-t-xl">
                         <CourseSidebar
+                            course_slug={courseData.slug || "No Slug Found!"}
                             thumbnail={courseData.thumbnail || PLACEHOLDER_THUMBNAIL}
                             price={courseData.price || 0}
                             original_price={undefined}
