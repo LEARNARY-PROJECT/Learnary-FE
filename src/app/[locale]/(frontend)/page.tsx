@@ -22,6 +22,7 @@ export default function HomePage() {
       </div>
     );
   }
+  
   return (
     <div className="w-full min-h-screen ">
       <section className="min-h-screen">

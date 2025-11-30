@@ -25,7 +25,7 @@ export default async function LocaleLayout({
 
   return (
     <CoreProviders locale={locale} messages={messages}>
-      <main className="min-h-screen w-full">
+      <main className=" w-full ">
         {children}
       </main>
     </CoreProviders>

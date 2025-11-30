@@ -14,7 +14,7 @@ export default function FrontendLayout({
   const locale = params.locale as string; 
 
   return (
-    <div className="min-h-screen flex flex-col bg-white">
+    <div className="min-h-screen flex flex-col">
       <NavbarWrapper locale={locale}>
         <main className="flex-1">
           {children}
