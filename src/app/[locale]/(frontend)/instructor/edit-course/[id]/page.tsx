@@ -14,13 +14,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, } from '
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger, } from "@/components/ui/accordion";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
-import { Loader2, ChevronLeft, Save, Send, PlusCircle, Trash2, GripVertical, Video, FileQuestion, Plus, X, Pencil } from 'lucide-react';
+import { Loader2, ChevronLeft, Save, Send, PlusCircle, Trash2, GripVertical, Video, FileQuestion, Plus, X, Pencil, LayoutList } from 'lucide-react';
 import { VideoUploadDialog } from '@/components/VideoUploadDialog';
 import { useAuth } from '@/app/context/AuthContext';
 import { formatNumberWithDots, parseNumberFromDots } from '@/utils/convert_price';
 import { slugify } from '@/utils/utils';
 import { toast } from 'sonner';
-
+import Link from 'next/link';
 type Category = { category_id: string; category_name: string; };
 type Level = { level_id: string; level_name: string; };
 type Option = { option_id?: string; option_content: string; is_correct: boolean; };
@@ -72,17 +72,17 @@ export default function EditCoursePage({ params }: { params: Promise<{ id: strin
     useEffect(() => {
         if (isAuthLoading) return;
 
-        if (!isLoggedIn || user?.role !== "INSTRUCTOR"&& user?.role !== "ADMIN") {
-        toast.info('Bạn không có quyền truy cập trang này.');
-        router.push(`/`); 
-        return;
+        if (!isLoggedIn || user?.role !== "INSTRUCTOR" && user?.role !== "ADMIN") {
+            toast.info('Bạn không có quyền truy cập trang này.');
+            router.push(`/`);
+            return;
         }
         const fetchData = async () => {
             try {
                 const [cRes, catRes, lvlRes] = await Promise.all([
                     api.get(`/courses/${courseId}`),
                     api.get('/categories'),
-                    api.get('/levels')     
+                    api.get('/levels')
                 ]);
                 const courseData = (cRes.data.data || cRes.data) as Course;
                 const newVideoStaging: VideoStaging = {};
@@ -92,7 +92,7 @@ export default function EditCoursePage({ params }: { params: Promise<{ id: strin
                         chap.lessons?.forEach((lesson: Lesson & { video_url?: string }) => {
                             if (lesson.video_url) {
                                 newVideoStaging[lesson.lesson_id] = lesson.video_url;
-                                   Reflect.deleteProperty(lesson, 'video_url'); // Xóa khỏi dữ liệu chính
+                                Reflect.deleteProperty(lesson, 'video_url'); // Xóa khỏi dữ liệu chính
                             }
                         });
                     });
@@ -111,7 +111,7 @@ export default function EditCoursePage({ params }: { params: Promise<{ id: strin
             }
         };
         fetchData();
-    }, [courseId, user,isAuthLoading, isLoggedIn, router]);
+    }, [courseId, user, isAuthLoading, isLoggedIn, router]);
 
     // Cảnh báo khi rời trang mà chưa lưu
     useEffect(() => {
@@ -140,17 +140,17 @@ export default function EditCoursePage({ params }: { params: Promise<{ id: strin
     // --- HANDLERS (Thêm/Sửa/Xóa) ---
     const handleAddChapter = async () => {
         if (!course) return;
-        
+
         try {
             const response = await api.post(`/chapters`, {
                 course_id: courseId,
                 chapter_title: "Chương mới",
                 order_index: course.chapter.length
             });
-            
+
             const newChapter = response.data.data || response.data;
             setNewlyCreatedChapters(prev => [...prev, newChapter.chapter_id]);
-            
+
             updateCourseState((draft) => {
                 draft.chapter.push({
                     chapter_id: newChapter.chapter_id,
@@ -168,15 +168,15 @@ export default function EditCoursePage({ params }: { params: Promise<{ id: strin
     const handleDeleteChapter = async (index: number) => {
         if (!confirm("Bạn chắc chắn muốn xóa chương này?")) return;
         if (!course) return;
-        
+
         const chapterIdToDelete = course.chapter[index]?.chapter_id;
         if (!chapterIdToDelete) return;
 
         try {
             await api.delete(`/chapters/${chapterIdToDelete}`);
-            
+
             setNewlyCreatedChapters(prev => prev.filter(id => id !== chapterIdToDelete));
-            
+
             updateCourseState((draft) => {
                 draft.chapter.splice(index, 1);
             });
@@ -191,9 +191,9 @@ export default function EditCoursePage({ params }: { params: Promise<{ id: strin
         if (!course) return;
         const chapterId = course.chapter[chapterIndex].chapter_id;
         const lessonTitle = "Bài học mới";
-        
+
         console.log('Creating lesson with chapter_id:', chapterId);
-        
+
         try {
             const response = await api.post(`/lessons`, {
                 chapter_id: chapterId,
@@ -201,12 +201,12 @@ export default function EditCoursePage({ params }: { params: Promise<{ id: strin
                 slug: slugify(lessonTitle),
                 duration: "00:00"
             });
-            
+
             console.log('Lesson created response:', response.data);
-            
+
             const newLesson = response.data.data || response.data;
             setNewlyCreatedLessons(prev => [...prev, newLesson.lesson_id]);
-            
+
             updateCourseState((draft) => {
                 draft.chapter[chapterIndex].lessons.push({
                     lesson_id: newLesson.lesson_id,
@@ -229,26 +229,26 @@ export default function EditCoursePage({ params }: { params: Promise<{ id: strin
     const handleDeleteLesson = async (chapterIndex: number, lessonIndex: number) => {
         if (!confirm("Xóa bài học này?")) return;
         if (!course) return;
-        
+
         const lessonIdToDelete = course.chapter[chapterIndex]?.lessons[lessonIndex]?.lesson_id;
         if (!lessonIdToDelete) return;
 
         try {
             await api.delete(`/lessons/${lessonIdToDelete}`);
-            
+
             setNewlyCreatedLessons(prev => prev.filter(id => id !== lessonIdToDelete));
-            
+
             updateCourseState((draft) => {
                 draft.chapter[chapterIndex].lessons.splice(lessonIndex, 1);
             });
 
             // Xóa video khỏi staging (nếu có)
             setVideoStaging(prev => {
-                const newStaging = {...prev};
+                const newStaging = { ...prev };
                 delete newStaging[lessonIdToDelete];
                 return newStaging;
             });
-            
+
             toast.success("Đã xóa bài học!");
         } catch (err) {
             console.error(err);
@@ -270,12 +270,12 @@ export default function EditCoursePage({ params }: { params: Promise<{ id: strin
             for (const lessonId of newlyCreatedLessons) {
                 await api.delete(`/lessons/${lessonId}`);
             }
-            
+
             // Xóa tất cả chapters mới tạo
             for (const chapterId of newlyCreatedChapters) {
                 await api.delete(`/chapters/${chapterId}`);
             }
-            
+
             setNewlyCreatedChapters([]);
             setNewlyCreatedLessons([]);
             setHasUnsavedChanges(false);
@@ -311,15 +311,14 @@ export default function EditCoursePage({ params }: { params: Promise<{ id: strin
         try {
             if (action === 'save') {
                 if (!canSaveDraft) {
-                     toast.error("Chỉ có thể lưu nháp khi chưa có video nào.");
+                    toast.warning("Chỉ có thể lưu nháp khi chưa có video nào.");
                     return;
                 }
                 await api.put(`/courses/draft/${courseId}`, course);
                 setHasUnsavedChanges(false);
                 setNewlyCreatedChapters([]);
                 setNewlyCreatedLessons([]);
-                toast.success("Đã lưu bản nháp thành công!");
-                router.push('/instructor/my-courses');
+                toast.success("Đã lưu bản nháp thành công! Bạn có thể xem tất cả khoá học của bạn tại trang khoá học của tôi!");
             } else {
                 if (!canSubmit) {
                     toast.error("Tất cả lesson đều phải có video và chapter buộc phải có lesson.");
@@ -358,20 +357,20 @@ export default function EditCoursePage({ params }: { params: Promise<{ id: strin
     if (isLoading) return <div className="flex h-screen items-center justify-center"><Loader2 className="animate-spin h-8 w-8 text-primary" /></div>;
     if (!course) return <div className="p-10 text-center text-red-500">Không tìm thấy dữ liệu khóa học.</div>;
     if (isAuthLoading) {
-    return (
-        <div className="flex h-screen items-center justify-center">
-            <Loader2 className="animate-spin text-primary" size={40} />
-        </div>
-    );
-  }
+        return (
+            <div className="flex h-screen items-center justify-center">
+                <Loader2 className="animate-spin text-primary" size={40} />
+            </div>
+        );
+    }
     return (
         <div className="min-h-screen bg-slate-50/50 pb-32">
             {/* --- HEADER STICKY --- */}
             <div className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b px-6 py-4 flex items-center justify-between shadow-sm">
                 <div className="flex items-center gap-4">
-                    <Button 
-                        variant="ghost" 
-                        size="icon" 
+                    <Button
+                        variant="ghost"
+                        size="icon"
                         className='hover:bg-gray-300 cursor-pointer'
                         onClick={async () => {
                             if (hasUnsavedChanges) {
@@ -379,7 +378,7 @@ export default function EditCoursePage({ params }: { params: Promise<{ id: strin
                                     'Bạn có thay đổi chưa lưu. Nếu rời trang, tất cả thay đổi mới tạo sẽ bị xóa. Bạn có chắc muốn rời trang?'
                                 );
                                 if (!confirmed) return;
-                                
+
                                 await rollbackChanges();
                             }
                             router.push('/instructor/my-courses');
@@ -398,6 +397,12 @@ export default function EditCoursePage({ params }: { params: Promise<{ id: strin
                     </div>
                 </div>
                 <div className="flex gap-2">
+                    <Link href="/instructor/my-courses">
+                        <Button variant="outline" className='cursor-pointer hover:bg-gray-200'>
+                            <LayoutList className="w-4 h-4 mr-2" /> Khoá học của tôi
+                        </Button>
+                    </Link>
+
                     <Button variant="outline" onClick={() => handleAction('save')} disabled={isSaving || course.status !== 'Draft'} className='cursor-pointer hover:bg-gray-200'>
                         <Save className="w-4 h-4 mr-2" /> Lưu nháp
                     </Button>
@@ -436,11 +441,11 @@ export default function EditCoursePage({ params }: { params: Promise<{ id: strin
                                     </SelectContent>
                                 </Select>
                             </div>
-                             <div className="space-y-2">
+                            <div className="space-y-2">
                                 <Label>Giá (VNĐ)</Label>
-                                <Input 
-                                    type="text" 
-                                    value={priceDisplay} 
+                                <Input
+                                    type="text"
+                                    value={priceDisplay}
                                     onChange={(e) => {
                                         const rawValue = e.target.value.replace(/\./g, '');
                                         if (rawValue === '' || /^\d+$/.test(rawValue)) {
@@ -448,11 +453,11 @@ export default function EditCoursePage({ params }: { params: Promise<{ id: strin
                                             updateCourseState(d => d.price = numValue);
                                             setPriceDisplay(rawValue === '' ? '' : formatNumberWithDots(numValue));
                                         }
-                                    }} 
+                                    }}
                                     placeholder="0"
                                 />
                             </div>
-                             <div className="space-y-2">
+                            <div className="space-y-2">
                                 <Label>Ảnh bìa (URL)</Label>
                                 <Input value={course.thumbnail || ''} onChange={(e) => updateCourseState(d => d.thumbnail = e.target.value)} placeholder="https://..." />
                                 {/* TODO: Thay bằng component Upload Image */}
@@ -514,7 +519,7 @@ export default function EditCoursePage({ params }: { params: Promise<{ id: strin
                                                         <Trash2 size={16} />
                                                     </Button>
                                                 </div>
-                                                
+
                                                 <div className="flex items-center gap-2 pl-10">
                                                     <VideoUploadDialog
                                                         lessonId={lesson.lesson_id}
@@ -610,7 +615,7 @@ function QuizEditDialog({ quiz, onSave }: { quiz?: Quiz | null | undefined, onSa
                 <DialogHeader>
                     <DialogTitle>{quiz ? 'Chỉnh sửa bài kiểm tra' : 'Tạo bài kiểm tra mới'}</DialogTitle>
                 </DialogHeader>
-                
+
                 <div className="flex-1 py-4 space-y-6 overflow-y-auto pr-2">
                     <div className="space-y-2">
                         <Label>Tiêu đề bài kiểm tra</Label>
@@ -621,24 +626,24 @@ function QuizEditDialog({ quiz, onSave }: { quiz?: Quiz | null | undefined, onSa
                         <Label>Danh sách câu hỏi ({localQuiz.questions.length})</Label>
                         {localQuiz.questions.map((q, qIdx) => (
                             <div key={qIdx} className="p-4 border rounded-lg bg-slate-50 relative space-y-3">
-                                <Button 
-                                    variant="ghost" size="icon" 
+                                <Button
+                                    variant="ghost" size="icon"
                                     className="absolute top-2 right-2 text-slate-400 hover:text-red-500"
                                     onClick={() => updateLocalQuiz(draft => draft.questions.splice(qIdx, 1))}
                                 >
                                     <Trash2 size={16} />
                                 </Button>
                                 <div className="pr-10">
-                                    <Input 
+                                    <Input
                                         className="font-medium bg-white"
-                                        placeholder={`Câu hỏi ${qIdx + 1}`} 
+                                        placeholder={`Câu hỏi ${qIdx + 1}`}
                                         onChange={e => updateLocalQuiz(draft => draft.questions[qIdx].title = e.target.value)}
                                     />
                                 </div>
                                 <div className="space-y-2 pl-4 border-l-2 border-slate-200 ml-1">
                                     {q.options.map((opt, oIdx) => (
                                         <div key={oIdx} className="flex items-center gap-2">
-                                            <Switch 
+                                            <Switch
                                                 checked={opt.is_correct}
                                                 onCheckedChange={(checked) => updateLocalQuiz(draft => {
                                                     // Nếu chọn đáp án này là đúng, các đáp án khác phải sai (nếu chỉ cho phép 1 đáp án đúng)
@@ -649,7 +654,7 @@ function QuizEditDialog({ quiz, onSave }: { quiz?: Quiz | null | undefined, onSa
                                                     }
                                                 })}
                                             />
-                                            <Input 
+                                            <Input
                                                 className={`flex-1 h-9 ${opt.is_correct ? 'border-green-500 bg-green-50/50' : 'bg-white'}`}
                                                 value={opt.option_content}
                                                 onChange={e => updateLocalQuiz(draft => draft.questions[qIdx].options[oIdx].option_content = e.target.value)}
@@ -676,7 +681,7 @@ function QuizEditDialog({ quiz, onSave }: { quiz?: Quiz | null | undefined, onSa
                 </div>
                 <DialogFooter className="flex justify-between sm:justify-between gap-2 mt-4 pt-4 border-t">
                     {quiz ? (
-                        <Button variant="destructive" onClick={() => { if(confirm("Xóa bài kiểm tra này?")) onSave(null); }}>
+                        <Button variant="destructive" onClick={() => { if (confirm("Xóa bài kiểm tra này?")) onSave(null); }}>
                             Xóa Quiz
                         </Button>
                     ) : <div></div>}
