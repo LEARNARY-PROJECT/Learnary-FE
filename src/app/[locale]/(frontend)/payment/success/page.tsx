@@ -5,50 +5,23 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { CheckCircle, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import api from '@/app/lib/axios';
-import { isAxiosError } from 'axios';
 import { toast } from 'sonner';
 
 export default function PaymentSuccessPage() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const [isRedirecting, setIsRedirecting] = useState(false);
-    const [isProcessing, setIsProcessing] = useState(true);
+    const [isProcessing] = useState(true);
 
     useEffect(() => {
-        const confirmPayment = async () => {
+        const handlePaymentSuccess = () => {
             const orderCode = searchParams.get('orderCode');
-            if (!orderCode) {
-                toast.error('Không tìm thấy mã đơn hàng');
-                router.push('/');
-                return;
-            }
-            try {
-                // Gọi API backend để:
-                // 1. Xác nhận thanh toán với PayOS
-                // 2. Tạo enrollment (cấp quyền truy cập khóa học)
-                // 3. Cập nhật trạng thái đơn hàng
-                const response = await api.post('/payment/confirm', { orderCode });
-                console.log('Payment confirmed:', orderCode);
-                toast.success('Thanh toán thành công! Bạn đã được cấp quyền truy cập khóa học.');
-                // Lưu thông tin course từ response nếu cần
-                if (response.data?.courseSlug) {
-                    sessionStorage.setItem('payment_course_slug', response.data.courseSlug);
-                }
-            } catch (err) {
-                console.error('Error confirming payment:', err);
-                if (isAxiosError(err)) {
-                    const errorMsg = err.response?.data?.message || 'Không thể xác nhận thanh toán';
-                    toast.error(errorMsg);
-                    
-                    // Nếu lỗi nghiêm trọng (VD: đơn hàng không tồn tại), chuyển về trang chủ
-                    if (err.response?.status === 404) {
-                        setTimeout(() => router.push('/'), 2000);
-                        return;
-                    }
-                }
-            } finally {
-                setIsProcessing(false);
+            
+            if (orderCode) {
+                // Webhook đã xử lý việc cập nhật DB rồi
+                // Chỉ cần hiển thị thông báo thành công
+                console.log('Payment successful for order:', orderCode);
+                toast.success('Thanh toán thành công! Bạn đã được ghi danh vào khóa học.');
             }
             
             // Lấy slug từ sessionStorage
@@ -68,7 +41,7 @@ export default function PaymentSuccessPage() {
             return () => clearTimeout(timer);
         };
 
-        confirmPayment();
+        handlePaymentSuccess();
     }, [searchParams, router]);
 
     const handleGoToCourse = () => {
