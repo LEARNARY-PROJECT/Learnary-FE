@@ -14,13 +14,13 @@ export type User = {
   role: UserRole; // Default: LEARNER
   phone: string;
   avatar?: string;
-  date_of_birth?: string; // ISO format string
+  date_of_birth?: string; 
   address?: string;
   city?: string;
   country?: string;
   nation?: string;
   bio?: string;
-  last_login?: string; // ISO format string
+  last_login?: string; 
   is_active: UserActiveState;
   created_at: string;
   updated_at: string;

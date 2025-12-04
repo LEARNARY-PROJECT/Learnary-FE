@@ -16,6 +16,7 @@ import { useIsMobile } from "@/hooks/useIsMobile";
 import { useAuth } from "@/app/context/AuthContext";
 import Image from 'next/image'
 import { useRouter } from "next/navigation";
+import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 export const NavbarLinks = () => {
   const t = useTranslations("Navbar");
 
@@ -73,10 +74,36 @@ function Navbar() {
       return (
         <>
           <Link href="/profile" title={user.fullName}>
-            <div className="w-fit h-fit hover:bg-pink-700 p-2 rounded-full group transition duration-200 ease-in-out">
-              <UserIcon className="h-6 w-6 cursor-pointer group-hover:text-white transition duration-200 ease-in-out" />
-            </div>
-          </Link>
+            {user.avatar ? (
+              <div className="relative inline-flex h-fit w-fit rounded-full overflow-hidden group">
+                <div
+                  className="
+                    pointer-events-none
+                    absolute inset-0
+                    before:content-['']
+                    before:absolute
+                    before:inset-0
+                    before:bg-[linear-gradient(120deg,transparent_0%,rgba(255,255,255,0.6)_50%,transparent_100%)]
+                    before:bg-size-[200%_200%]
+                    before:bg-position-[-100%_0]
+                    before:transition-[background-position]
+                    before:duration-800
+                    group-hover:before:bg-position-[120%_0]
+                  "
+                />
+                <div className="w-fit h-fit hover:bg-yellow-700 p-2 rounded-full transition duration-200 ease-in-out">
+                  <Avatar>
+                    <AvatarImage src={`${user.avatar}`} alt="Avatar User" />
+                    <AvatarFallback>User Avatar</AvatarFallback>
+                  </Avatar>
+                </div>
+              </div>
+            ) : (
+              <div className="w-fit h-fit hover:bg-pink-700 p-2 rounded-full group transition duration-200 ease-in-out">
+                <UserIcon className="h-6 w-6 cursor-pointer group-hover:text-white transition duration-200 ease-in-out" />
+              </div>
+            )}
+          </Link >
           <Link href="/cart" title={"Giỏ hàng"}>
             <ShoppingBagIcon className="h-6 w-6 cursor-pointer " />
           </Link>
