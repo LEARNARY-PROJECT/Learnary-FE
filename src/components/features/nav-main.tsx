@@ -43,13 +43,12 @@ export function NavMain({
         {items.map((item) => {
           const isParentActive =
             item.url === pathname || item.items?.some((sub) => sub.url === pathname);
-
           return (
             <Collapsible
               key={item.title}
               asChild
               defaultOpen={isParentActive}
-              className="group/collapsible"
+              className="group/collapsible cursor-pointer"
             >
               <SidebarMenuItem>
                 <CollapsibleTrigger asChild>

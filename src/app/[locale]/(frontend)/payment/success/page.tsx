@@ -11,7 +11,7 @@ export default function PaymentSuccessPage() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const [isRedirecting, setIsRedirecting] = useState(false);
-    const [isProcessing, setIsProcessing] = useState(true);
+    const [isProcessing] = useState(true);
 
     useEffect(() => {
         const handlePaymentSuccess = () => {
@@ -23,8 +23,6 @@ export default function PaymentSuccessPage() {
                 console.log('Payment successful for order:', orderCode);
                 toast.success('Thanh toán thành công! Bạn đã được ghi danh vào khóa học.');
             }
-            
-            setIsProcessing(false);
             
             // Lấy slug từ sessionStorage
             const courseSlug = sessionStorage.getItem('payment_course_slug');
