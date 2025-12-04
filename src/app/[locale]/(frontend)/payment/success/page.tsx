@@ -5,8 +5,6 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { CheckCircle, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import api from '@/app/lib/axios';
-import { isAxiosError } from 'axios';
 import { toast } from 'sonner';
 
 export default function PaymentSuccessPage() {
@@ -16,22 +14,14 @@ export default function PaymentSuccessPage() {
     const [isProcessing, setIsProcessing] = useState(true);
 
     useEffect(() => {
-        const confirmPayment = async () => {
+        const handlePaymentSuccess = () => {
             const orderCode = searchParams.get('orderCode');
             
             if (orderCode) {
-                try {
-                    // Gọi API backend để xác nhận thanh toán và update database
-                    await api.post('/payment/confirm', { orderCode });
-                    console.log('Payment confirmed:', orderCode);
-                    toast.success('Thanh toán đã được xác nhận!');
-                } catch (err) {
-                    console.error('Error confirming payment:', err);
-                    if (isAxiosError(err)) {
-                        const errorMsg = err.response?.data?.message || 'Không thể xác nhận thanh toán';
-                        toast.error(errorMsg);
-                    }
-                }
+                // Webhook đã xử lý việc cập nhật DB rồi
+                // Chỉ cần hiển thị thông báo thành công
+                console.log('Payment successful for order:', orderCode);
+                toast.success('Thanh toán thành công! Bạn đã được ghi danh vào khóa học.');
             }
             
             setIsProcessing(false);
@@ -53,7 +43,7 @@ export default function PaymentSuccessPage() {
             return () => clearTimeout(timer);
         };
 
-        confirmPayment();
+        handlePaymentSuccess();
     }, [searchParams, router]);
 
     const handleGoToCourse = () => {
