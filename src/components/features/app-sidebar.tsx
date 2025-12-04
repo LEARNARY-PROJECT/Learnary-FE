@@ -8,6 +8,7 @@ import {
   Settings2,
   SquareStack,
   Users,
+  ShieldUser,
 } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { NavMain } from "@/components/features/nav-main";
@@ -98,6 +99,17 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       icon: Settings2,
       isActive: pathname.startsWith(`${adminBasePath}/settings`),
       items: [],
+    },
+    {
+      title: "Người quản trị",
+      url: `${adminBasePath}/administrators`,
+      icon: ShieldUser,
+      isActive: pathname.startsWith(`${adminBasePath}/administrators`),
+      items: [
+        { title:"Quản lý quyền truy cập", url:`${adminBasePath}/administrators/permission`},
+        { title:"Quản lý vai trò", url:`${adminBasePath}/administrators/admin-role`},
+        { title:"Quản lý tài khoản quản trị viên", url:`${adminBasePath}/administrators/admin-account-management`},
+      ],
     },
   ];
 

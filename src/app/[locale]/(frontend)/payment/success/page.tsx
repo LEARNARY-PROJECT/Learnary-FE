@@ -18,23 +18,38 @@ export default function PaymentSuccessPage() {
     useEffect(() => {
         const confirmPayment = async () => {
             const orderCode = searchParams.get('orderCode');
-            
-            if (orderCode) {
-                try {
-                    // Gọi API backend để xác nhận thanh toán và update database
-                    await api.post('/payment/confirm', { orderCode });
-                    console.log('Payment confirmed:', orderCode);
-                    toast.success('Thanh toán đã được xác nhận!');
-                } catch (err) {
-                    console.error('Error confirming payment:', err);
-                    if (isAxiosError(err)) {
-                        const errorMsg = err.response?.data?.message || 'Không thể xác nhận thanh toán';
-                        toast.error(errorMsg);
+            if (!orderCode) {
+                toast.error('Không tìm thấy mã đơn hàng');
+                router.push('/');
+                return;
+            }
+            try {
+                // Gọi API backend để:
+                // 1. Xác nhận thanh toán với PayOS
+                // 2. Tạo enrollment (cấp quyền truy cập khóa học)
+                // 3. Cập nhật trạng thái đơn hàng
+                const response = await api.post('/payment/confirm', { orderCode });
+                console.log('Payment confirmed:', orderCode);
+                toast.success('Thanh toán thành công! Bạn đã được cấp quyền truy cập khóa học.');
+                // Lưu thông tin course từ response nếu cần
+                if (response.data?.courseSlug) {
+                    sessionStorage.setItem('payment_course_slug', response.data.courseSlug);
+                }
+            } catch (err) {
+                console.error('Error confirming payment:', err);
+                if (isAxiosError(err)) {
+                    const errorMsg = err.response?.data?.message || 'Không thể xác nhận thanh toán';
+                    toast.error(errorMsg);
+                    
+                    // Nếu lỗi nghiêm trọng (VD: đơn hàng không tồn tại), chuyển về trang chủ
+                    if (err.response?.status === 404) {
+                        setTimeout(() => router.push('/'), 2000);
+                        return;
                     }
                 }
+            } finally {
+                setIsProcessing(false);
             }
-            
-            setIsProcessing(false);
             
             // Lấy slug từ sessionStorage
             const courseSlug = sessionStorage.getItem('payment_course_slug');

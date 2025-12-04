@@ -58,7 +58,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           fullName: decodedUser.fullName.trim(),
           avatar: decodedUser.avatar?.trim(),
         };
-        
         setUser(cleanUser);
         setToken(accessToken);
         sessionStorage.setItem('accessToken', accessToken); 

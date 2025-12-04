@@ -34,9 +34,7 @@ export default function SignUpPage() {
       setError('Mật khẩu xác nhận không khớp.');
       return;
     }
-
     setIsSubmitting(true);
-
     try {
       await api.post(`/auth/register`, { 
         fullName, 
@@ -45,7 +43,6 @@ export default function SignUpPage() {
       });
       alert('Đăng ký thành công! Vui lòng đăng nhập.');
       router.push('/login');
-
     } catch (err) {
       if (isAxiosError(err)) {
         setError(err.response?.data?.message || err.response?.data?.error || 'Email này đã được sử dụng.');
