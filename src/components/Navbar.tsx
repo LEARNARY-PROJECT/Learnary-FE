@@ -17,10 +17,11 @@ import { useAuth } from "@/app/context/AuthContext";
 import Image from 'next/image'
 import { useRouter } from "next/navigation";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
-export const NavbarLinks = () => {
+
+export const NavbarLinks = (userRole?: string) => {
   const t = useTranslations("Navbar");
 
-  return [
+  const baseLinks = [
     {
       name: t("home"),
       href: "/",
@@ -29,32 +30,42 @@ export const NavbarLinks = () => {
       name: t("explore"),
       href: "/explore-courses",
     },
+  ];
+  const learnerLink = userRole ? [
     {
-      name: t("become-lecturer"),
-      href: "/become-lecturer",
-    },
+      name: t("learn-are"),
+      href: "/learn-area"
+    }
+  ] : [];
+
+  const instructorLink = userRole === "INSTRUCTOR" ? [
     {
       name: t("instructor"),
       href: "/instructor"
-    },
-    {
-      name: t("detail"),
-      href: "/course-learn"
-    },
+    }
+  ] : [];
+  const adminLink = userRole === "ADMIN" ? [
     {
       name: t("admin"),
       href: "/admin-side"
-    },
+    }
+  ] : [];
+  const becomeLecturerLink = (!userRole || (userRole !== "INSTRUCTOR" && userRole !== "ADMIN")) ? [
+    {
+      name: t("become-lecturer"),
+      href: "/become-lecturer",
+    }
+  ] : [];
 
-  ];
+  return [...baseLinks, ...learnerLink, ...instructorLink, ...adminLink, ...becomeLecturerLink];
 };
 
 function Navbar() {
   const router = useRouter();
   const isMobile = useIsMobile();
-  const links = NavbarLinks();
   const [isOpen, setIsOpen] = useState(false);
   const { isLoggedIn, user, logout, isLoading } = useAuth();
+  const links = NavbarLinks(user?.role);
   const t = useTranslations("Navbar");
   async function handleLogout(): Promise<void> {
     try {
