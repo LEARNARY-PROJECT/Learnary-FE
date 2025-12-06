@@ -133,3 +133,11 @@ export type Feedback = {
     user_id:string,
     comment:string,
 }
+
+export type LearnerCourse = {
+  learner_id: string;
+  course_id: string;
+  enrolledAt: string;
+  progress?: number;
+  course: Course;
+}

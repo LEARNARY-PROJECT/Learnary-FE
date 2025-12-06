@@ -115,7 +115,7 @@ const CourseDetailPage = () => {
                 </BreadcrumbItem>
                 <BreadcrumbSeparator />
                 <BreadcrumbItem>
-                  <BreadcrumbLink href="/">Khu vực học tập</BreadcrumbLink>
+                  <BreadcrumbLink href="/learn-area">Khu vực học tập</BreadcrumbLink>
                 </BreadcrumbItem>
                 <BreadcrumbSeparator />
                 <BreadcrumbItem>
