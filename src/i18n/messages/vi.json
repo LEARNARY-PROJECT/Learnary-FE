@@ -4,10 +4,11 @@
     "explore": "Khám phá khóa học",
     "become-lecturer": "Trở thành giảng viên",
     "instructor": "Khu vực giảng viên",
+    "learn-are": "Khu vực học tập",
     "detail":"Khu vực học tập",
     "login" : "Đăng nhập",
     "logout":"Đăng xuất",
-    "admin":"Admin Side"
+    "admin":"Quản trị viên"
   },
   "Topic": {
     "category_health": "Sức khoẻ",

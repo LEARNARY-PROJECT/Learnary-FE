@@ -41,29 +41,42 @@ import { Admin } from "@/type/administrator.type";
 import { Spinner } from "@/components/ui/spinner";
 import { ToasterConfirm } from "@/components/ToasterConfimer";
 import CreateAdminForm from "@/components/CreateAdminForm";
+import { EditAdminAccountForm } from "@/components/EditAdminAccountForm";
 import { Badge } from "@/components/ui/badge";
+import { useAuth } from '@/app/context/AuthContext';
 
 type SortOrder = 'asc' | 'desc' | null;
 
 export default function AdminAccountManagement() {
+  const currentUser = useAuth().user;
   const [admins, setAdmins] = useState<Admin[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [open, setOpen] = useState(false);
   const [sortOrder, setSortOrder] = useState<SortOrder>(null);
+  const [currentAdmin, setCurrentAdmin] = useState<Admin | null>(null);
+  const [editDialog, setEditDialog] = useState<{ open: boolean; admin: Admin | null }>({
+    open: false,
+    admin: null,
+  });
+  const getCurrentAdmin = useCallback(async () => {
+    const res = await api.get(`/admins/getAdminByUserId/${currentUser?.id}`)
+    if (!res) {
+      toast.error("Lỗi không lấy được user đang đăng nhập!")
+    }
+    const data = res.data.data
+    setCurrentAdmin(data)
+  }, [currentUser])
   const fetchAdmins = useCallback(async () => {
     try {
       setIsLoading(true);
       const response = await api.get("/admins");
       const apiData = response.data;
-
       if (apiData.success && Array.isArray(apiData.data)) {
         setAdmins(apiData.data);
-
         toast.success(`Đã tải ${apiData.data.length} tài khoản admin`);
       } else if (Array.isArray(apiData)) {
         setAdmins(apiData);
-
         toast.success(`Đã tải ${apiData.length} tài khoản admin`);
       } else {
         throw new Error("Dữ liệu API không đúng định dạng");
@@ -81,9 +94,9 @@ export default function AdminAccountManagement() {
   }, []);
 
   useEffect(() => {
-
+    getCurrentAdmin();
     fetchAdmins();
-  }, [fetchAdmins]);
+  }, [fetchAdmins, getCurrentAdmin]);
 
 
   const handleDeleteAdmin = async (adminId: string) => {
@@ -127,7 +140,14 @@ export default function AdminAccountManagement() {
   };
 
   const filteredAndSortedAdmins = React.useMemo(() => {
-    let filtered = admins.filter((admin) => {
+    const currentLevel = currentAdmin?.adminRole?.level;
+    let result = admins.filter((admin) => {
+      const level = admin.adminRole?.level;
+      if(level === undefined || level === null || currentLevel === undefined || currentLevel === null) return false;
+      return level > currentLevel;
+    })
+
+    const filtered = result.filter((admin) => {
       const searchLower = searchTerm.toLowerCase();
       return (
         admin.user?.fullName?.toLowerCase().includes(searchLower) ||
@@ -137,7 +157,7 @@ export default function AdminAccountManagement() {
     });
 
     if (sortOrder) {
-      filtered = [...filtered].sort((a, b) => {
+      result = [...filtered].sort((a, b) => {
         const levelA = a.adminRole?.level ?? 999;
         const levelB = b.adminRole?.level ?? 999;
         return sortOrder === 'asc' ? levelA - levelB : levelB - levelA;
@@ -145,7 +165,7 @@ export default function AdminAccountManagement() {
     }
 
     return filtered;
-  }, [admins, searchTerm, sortOrder]);
+  }, [admins, searchTerm, sortOrder,currentAdmin]);
 
   if (isLoading) {
     return (
@@ -158,9 +178,9 @@ export default function AdminAccountManagement() {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <div className='flex flex-col gap-2'>
-          <h1 className="text-3xl font-bold">Quản lý tài khoản Admin</h1>
-          <p className="text-gray-500 mt-1">Tổng số: {admins.length} tài khoản quản trị</p>
+        <div className='flex flex-col gap-2 justify-center w-full'>
+          <h1 className="text-3xl font-bold self-center font-roboto-bold">Quản lý tài khoản Admin</h1>
+          <p className="text-blue-600 mt-1  font-roboto-condensed-bold">Tổng: {admins.length} tài khoản</p>
         </div>
       </div>
 
@@ -196,7 +216,7 @@ export default function AdminAccountManagement() {
 
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-              <Button className="cursor-pointer">
+              <Button className="cursor-pointer hover:text-white bg-white text-blue-600 hover:bg-blue-700 border border-blue-600">
                 <Plus className="mr-2 h-4 w-4" />
                 Thêm tài khoản admin
               </Button>
@@ -280,6 +300,11 @@ export default function AdminAccountManagement() {
                         Copy User ID
                       </DropdownMenuItem>
                       <DropdownMenuItem
+                        onClick={() => setEditDialog({ open: true, admin: admin })}
+                      >
+                        Sửa vai trò quản trị
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
                         className="text-red-600"
                         onClick={() => handleDeleteAdmin(admin.admin_id)}
                       >
@@ -293,6 +318,26 @@ export default function AdminAccountManagement() {
           </TableBody>
         </Table>
       </div>
+
+      {/* Edit Dialog */}
+      <Dialog open={editDialog.open} onOpenChange={(open) => setEditDialog(s => ({ ...s, open }))}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Sửa vai trò quản trị</DialogTitle>
+          </DialogHeader>
+          {editDialog.admin && (
+            <EditAdminAccountForm
+              open={editDialog.open}
+              onOpenChange={(open) => setEditDialog(s => ({ ...s, open }))}
+              admin={editDialog.admin}
+              onSuccess={() => {
+                fetchAdmins();
+                setEditDialog({ open: false, admin: null });
+              }}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

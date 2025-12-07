@@ -51,7 +51,6 @@ export default function InstructorDashboard() {
   const { user, isLoggedIn, isLoading: isAuthLoading } = useAuth();
   const router = useRouter();
 
-
   // Giả lập fetch dữ liệu
   useEffect(() => {
     if (isAuthLoading) return;
@@ -94,7 +93,6 @@ export default function InstructorDashboard() {
 
   return (
     <div className="min-h-screen bg-slate-50/50 p-8 space-y-8">
-      {/* --- HEADER --- */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-slate-900">Tổng quan</h1>
@@ -106,6 +104,9 @@ export default function InstructorDashboard() {
           </Link>
           <Link href="/instructor/my-courses">
             <Button variant="outline">Quản lý khóa học</Button>
+          </Link>
+          <Link href="/instructor/my-combo">
+            <Button variant="outline">Quản lý combo</Button>
           </Link>
           <Link href="/instructor/create-course">
             <Button className="shadow-lg hover:shadow-xl transition-all">

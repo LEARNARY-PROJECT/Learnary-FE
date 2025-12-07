@@ -42,7 +42,7 @@ export default function MyCoursesPage() {
     if (isAuthLoading) return;
 
     if (!isLoggedIn || user?.role !== "INSTRUCTOR" && user?.role !== "ADMIN") {
-      toast.error('Bạn không có quyền truy cập trang này.');
+      toast.info('Bạn không có quyền truy cập trang này.');
       router.push(`/`); 
       return;
     }

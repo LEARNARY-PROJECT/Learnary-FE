@@ -62,7 +62,7 @@ const LessonList: React.FC<LessonListProps> = ({
 
     const handleLockClick = (id: string) => {
         console.log('🔒 Lesson bị khóa:', id)
-        toast.warning('⚠️ Bài học này yêu cầu Premium!')
+        toast.info('⚠️ Bài học này yêu cầu Premium!')
     }
 
     const handleOpen = (id: string) => {

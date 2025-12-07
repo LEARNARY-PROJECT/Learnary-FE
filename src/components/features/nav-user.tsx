@@ -19,7 +19,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { signOut } from "next-auth/react";
+import { useAuth } from "@/app/context/AuthContext";
 
 export function NavUser({
   user,
@@ -30,6 +30,7 @@ export function NavUser({
   };
 }) {
   const { isMobile } = useSidebar();
+  const { logout } = useAuth();
 
   return (
     <SidebarMenu>
@@ -67,7 +68,7 @@ export function NavUser({
               </div>
             </DropdownMenuLabel>
 
-            <DropdownMenuItem onClick={() => signOut({ callbackUrl: "/login" })}
+            <DropdownMenuItem onClick={() => logout()}
               className="cursor-pointer">
               <LogOut />
               Log out
