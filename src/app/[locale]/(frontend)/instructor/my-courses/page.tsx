@@ -17,8 +17,8 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import api from '@/app/lib/axios';
 import { isAxiosError } from 'axios'; // [SỬA] Dùng isAxiosError
 import { useAuth } from '@/app/context/AuthContext';
-import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { Loader2 } from 'lucide-react';
 type Course = {
   course_id: string;
   title: string;

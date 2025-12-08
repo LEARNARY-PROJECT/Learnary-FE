@@ -9,6 +9,7 @@ import {
   SquareStack,
   Users,
   ShieldUser,
+  ArrowLeftRight,
 } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { NavMain } from "@/components/features/nav-main";
@@ -82,7 +83,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               }
             }
             
-            setAdminResources(Array.from(resourceSet));
+              const resourcesArray = Array.from(resourceSet);
+            console.log("🔑 Admin Resources:", resourcesArray);
+            setAdminResources(resourcesArray);
           } catch (error) {
             console.error("Error fetching admin permissions:", error);
             setAdminResources([]);
@@ -162,12 +165,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       requiredResources: ["FEEDBACK"],
     },
     {
-      title: "Giao dịch",
+      title: "Transactions",
       url: `${adminBasePath}/transactions`,
-      icon: MessageSquare,
+      icon: ArrowLeftRight,
       isActive: pathname.startsWith(`${adminBasePath}/transactions`),
       items: [
         { title: "Tất cả giao dịch", url: `${adminBasePath}/transactions` },
+        { title: "Yêu cầu rút tiền", url: `${adminBasePath}/transactions/withdraw` },
       ],
       requiredResources: ["TRANSACTION"],
     },
@@ -195,13 +199,19 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   ];
 
   const navMain = allNavItems.filter(item => {
+    console.log(`📋 Checking item: ${item.title}, required: [${item.requiredResources?.join(', ') || 'NONE'}]`);
+    
     if (adminResources.includes("ALL")) {
+      console.log(`  ✅ Admin has ALL permission`);
       return true;
     }
-    if (item.requiredResources.length === 0) {
+    if (!item.requiredResources || item.requiredResources.length === 0) {
+      console.log(`  ✅ Item has no requirements`);
       return true;
     }
-    return item.requiredResources.some(resource => adminResources.includes(resource));
+    const hasPermission = item.requiredResources.some(resource => adminResources.includes(resource));
+    console.log(`  ${hasPermission ? '✅' : '❌'} Permission check result: ${hasPermission}`);
+    return hasPermission;
   });
 
   if (isLoading || adminLoading) {
