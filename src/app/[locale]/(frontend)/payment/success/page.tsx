@@ -34,7 +34,7 @@ export default function PaymentSuccessPage() {
                     sessionStorage.removeItem('payment_course_slug');
                     router.push(`/course-learn/${courseSlug}`);
                 } else {
-                    router.push('/my-courses');
+                    router.push('/learn-area');
                 }
             }, 3000);
 
@@ -52,7 +52,7 @@ export default function PaymentSuccessPage() {
             sessionStorage.removeItem('payment_course_slug');
             router.push(`/course-learn/${courseSlug}`);
         } else {
-            router.push('/my-courses');
+            router.push('/learn-area');
         }
     };
 
@@ -97,7 +97,7 @@ export default function PaymentSuccessPage() {
                         
                         <Button 
                             variant="outline" 
-                            onClick={() => router.push('/my-courses')}
+                            onClick={() => router.push('/learn-area')}
                             className="w-full"
                         >
                             Xem khóa học của tôi

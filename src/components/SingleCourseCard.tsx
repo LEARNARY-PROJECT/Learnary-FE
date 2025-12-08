@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { Badge } from "@/components/ui/badge";
+import { useTranslations } from 'next-intl'; 
 import {
   Tooltip,
   TooltipContent,
@@ -25,7 +26,7 @@ interface SingleCourseCardProps {
 const SingleCourseCard: React.FC<SingleCourseCardProps> = ({ course }) => {
   const dataCourse = course;
   const isMobile = useIsMobile();
-
+  const t = useTranslations("Course-Card");
   const wrapperClass = `w-[350px] h-[350px] border-2 p-3 transition-transform duration-300 hover:shadow-lg hover:scale-102 flex flex-col gap-0 ${isMobile ? "rounded-2xl h-[405px]" : "rounded-3xl cursor-pointer"
     }`;
 
@@ -37,7 +38,6 @@ const SingleCourseCard: React.FC<SingleCourseCardProps> = ({ course }) => {
     : "flex justify-end pl-2 pt-2 pr-2";
 
   const buttonWrapperClass = `w-full flex pl-2 ${isMobile ? " justify-end gap-2" : " justify-end justify-items-center items-center pr-2 gap-2"}`;
-
   const imageWidth = 350;
   const imageHeight = isMobile ? 150 : 150;
 
@@ -72,7 +72,7 @@ const SingleCourseCard: React.FC<SingleCourseCardProps> = ({ course }) => {
                     {dataCourse.title}
                   </h3>
                   <h5 className="text-sm font-roboto text-gray-600">
-                    {dataCourse.instructor?.user?.fullName || "Không có thông tin tác giả"}
+                    {t("instructor-name")}: {dataCourse.instructor?.user?.fullName || "Không có thông tin tác giả"}
                   </h5>
                 </div>
               </div>
@@ -86,7 +86,7 @@ const SingleCourseCard: React.FC<SingleCourseCardProps> = ({ course }) => {
                   </Button>
                   <Button asChild className="bg-pink-600 hover:bg-pink-500 transition-colors">
                     <Link href={`/course-detail/${dataCourse.slug}`}>
-                      Học ngay
+                      Xem chi tiết
                     </Link>
                   </Button>
                 </div>

@@ -34,5 +34,9 @@
     "btnEnroll":"Enroll Now",
     "btnCard":"Add to cart",
     "courseIncludes":"This course includes:"
+  },
+  "Course-Card": {
+    "instructor-name":"Instructor",
+    "course-description":"Course Description"
   }
 }

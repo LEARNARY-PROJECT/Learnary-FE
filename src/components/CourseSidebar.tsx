@@ -20,7 +20,7 @@ interface CourseSidebarProps {
   isLoading?: boolean;
 }
 
-export default function CourseSidebar({ thumbnail, price, original_price, sale_off, includes, course_slug,onBuyNow, isLoading }: CourseSidebarProps) {
+export default function CourseSidebar({ thumbnail, price, original_price, sale_off, includes, onBuyNow, isLoading }: CourseSidebarProps) {//course_slug,
   const t = useTranslations("Course-Detail-Sidebar");
   original_price = 1200000
   sale_off = 50
@@ -65,21 +65,23 @@ export default function CourseSidebar({ thumbnail, price, original_price, sale_o
           </div>
         </div>
 
-        <Link href={`/course-learn/${course_slug}`}>
+        {/* <Link href={`/course-learn/${course_slug}`}>
           <Button className="w-full text-white cursor-pointer mb-3 bg-pink-600 transition-all duration-300 ease-in-out hover:bg-linear-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700 font-roboto-bold py-6 text-lg">
             {t("btnEnroll")}
           </Button>
-        </Link>
-        <Button variant="outline" className="w-full mb-6 font-roboto-bold py-6 cursor-pointer" >
-          <Link href={``}>{t("btnCard")}</Link>
-        </Button>
+        </Link> */}
+        <Button  
+          className="w-full mb-3 font-roboto-bold py-6 cursor-pointer bg-pink-600 hover:bg-pink-700 text-lg text-white" 
+        >
+          <Link href={``}>{t("btnCard")}</Link> 
+        </Button> 
         <Button 
-                    className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-6 text-lg"
-                    onClick={onBuyNow}     // Gọi hàm
-                    disabled={isLoading}   // Disable khi đang tải
-                >
-                    {isLoading ? 'Đang tạo link...' : 'Mua ngay'}
-                </Button>
+          className="w-full mb-3 bg-purple-600 hover:bg-purple-700 text-white font-roboto-bold py-6 text-lg cursor-pointer"
+          onClick={onBuyNow}     // Gọi hàm
+          disabled={isLoading}   // Disable khi đang tải
+        >
+          {isLoading ? 'Đang tạo link...' : 'Mua ngay'}
+        </Button>
 
         <div className="space-y-3">
           <h3 className="font-roboto-bold text-sm mb-4">{t("courseIncludes")}</h3>

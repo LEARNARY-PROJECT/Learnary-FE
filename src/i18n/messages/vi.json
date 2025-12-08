@@ -27,6 +27,7 @@
   "Course-Detail-Tab": {
     "overview":"Tổng quan",
     "curriculum":"Danh sách bài học",
+    "curriculum-combo":"Danh sách khóa học",
     "instructor":"Giảng viên",
     "reviews":"Đánh giá"
   },
@@ -34,5 +35,9 @@
     "btnEnroll":"Học ngay",
     "btnCard":"Thêm vào giỏ hàng",
     "courseIncludes":"Khóa học bao gồm:"
+  },
+  "Course-Card": {
+    "instructor-name":"Giảng Viên",
+    "course-description":"Mô tả khóa học"
   }
 }
