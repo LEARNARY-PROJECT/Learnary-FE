@@ -435,7 +435,7 @@ export default function ProfilePage() {
 
                                 <div className="mb-6">
                                   <h4 className="font-bold text-gray-800 mb-3 flex items-center gap-2"><BuildingLibraryIcon className="w-5 h-5" /> Thông tin ngân hàng</h4>
-                                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
+                                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-linear-to-br from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
                                     <div><Label className="text-gray-400 text-xs">Tên ngân hàng</Label><p className="text-sm font-semibold mt-1">{instructorFormData.bank_name || "Chưa cập nhật"}</p></div>
                                     <div><Label className="text-gray-400 text-xs">Số tài khoản</Label><p className="text-sm font-semibold mt-1">{instructorFormData.account_number || "Chưa cập nhật"}</p></div>
                                     <div><Label className="text-gray-400 text-xs">Chủ tài khoản</Label><p className="text-sm font-semibold mt-1">{instructorFormData.account_holder_name || "Chưa cập nhật"}</p></div>

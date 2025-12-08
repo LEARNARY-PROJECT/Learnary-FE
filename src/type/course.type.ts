@@ -141,3 +141,32 @@ export type LearnerCourse = {
   progress?: number;
   course: Course;
 }
+
+export type LessonProgressData = {
+  progress_id: string;
+  user_id: string;
+  lesson_id: string;
+  is_completed: boolean;
+  completed_at: string | null;
+  lesson: {
+    lesson_id: string;
+    title: string;
+    duration: string;
+    order_index: number;
+    chapter_id: string;
+    belongChapter: {
+      chapter_id: string;
+      chapter_title: string;
+      order_index: number;
+    };
+  };
+}
+
+export type LessonProgressMap = {
+  [lesson_id: string]: {
+    is_completed: boolean;
+    completed_at: string | null;
+  };
+}
+
+

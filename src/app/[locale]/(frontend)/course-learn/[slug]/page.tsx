@@ -6,7 +6,7 @@ import "plyr/dist/plyr.css";
 import Video from "@/components/Video"
 import NotesTab from '@/components/NotesTab';
 import QuizDialog from '@/components/QuizDialog';
-import { Course, Chapter, Lesson, Quiz } from '@/type/course.type';
+import { Course, Chapter, Lesson, Quiz, LessonProgressData, LessonProgressMap } from '@/type/course.type';
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -34,6 +34,7 @@ const CourseDetailPage = () => {
   const [currentLesson, setCurrentLesson] = useState<Lesson | null>(null);
   const [selectedQuiz, setSelectedQuiz] = useState<Quiz | null>(null);
   const [isQuizDialogOpen, setIsQuizDialogOpen] = useState(false);
+  const [lessonProgress, setLessonProgress] = useState<LessonProgressMap>({});
 
   useEffect(() => {
     const fetchCourse = async () => {
@@ -42,6 +43,11 @@ const CourseDetailPage = () => {
         const response = await api.get(`/courses/slug/${slug}`);
         const courseData: Course = response.data;
         setCourse(courseData);
+        
+        if (courseData.course_id) {
+          await fetchLessonProgress(courseData.course_id);
+        }
+        
         if (courseData.chapter && courseData.chapter.length > 0) {
           const firstChapter = courseData.chapter[0];
           if (firstChapter.lessons && firstChapter.lessons.length > 0) {
@@ -71,6 +77,48 @@ const CourseDetailPage = () => {
       fetchCourse();
     }
   }, [slug, router]);
+
+  const fetchLessonProgress = async (courseId: string) => {
+    try {
+      const response = await api.get(`/lesson-progress/course/${courseId}`);
+      const progressData: LessonProgressData[] = response.data.data || [];
+      
+      const progressMap: LessonProgressMap = {};
+      progressData.forEach((item) => {
+        progressMap[item.lesson_id] = {
+          is_completed: item.is_completed,
+          completed_at: item.completed_at
+        };
+      });
+      setLessonProgress(progressMap);
+    } catch (error) {
+      console.error('Error fetching lesson progress:', error);
+    }
+  };
+
+  const markLessonComplete = async (lessonId: string) => {
+    try {
+      await api.post('/lesson-progress/complete', {
+        lesson_id: lessonId
+      });
+      setLessonProgress(prev => ({...prev,
+        [lessonId]: {
+          is_completed: true,
+          completed_at: new Date().toISOString()
+        }
+      }));
+      toast.success('Đã đánh dấu hoàn thành bài học!');
+    } catch (error) {
+      console.error('Error marking lesson complete:', error);
+      toast.error('Không thể cập nhật tiến độ');
+    }
+  };
+
+  const handleVideoComplete = () => {
+    if (currentLesson && !lessonProgress[currentLesson.lesson_id]?.is_completed) {
+      markLessonComplete(currentLesson.lesson_id);
+    }
+  };
 
   const handleLessonSelect = (lesson: Lesson) => {
     setCurrentLesson(lesson);
@@ -129,13 +177,20 @@ const CourseDetailPage = () => {
             <div className='flex flex-col justify-items-center w-full '>
               <div className="video grow h-fit rounded overflow-hidden mt-4 ">
                 {currentLesson.video_url ? (
-                  <Video key={currentLesson.lesson_id} video_url={currentLesson.video_url}></Video>
+                  <Video 
+                    key={currentLesson.lesson_id} 
+                    video_url={currentLesson.video_url}
+                    onCompleted={handleVideoComplete}
+                  />
                 ) : (
                   <p className="text-center p-8">Video hiện tại đang lỗi! Chúng tôi đang cố gắng khắc phục, bạn kiên nhẫn nhé!</p>
                 )}
               </div>
               <div className="mb-3 pt-5 ml-1">
                 <h2 className="text-xl font-bold">{currentLesson.title}</h2>
+                {lessonProgress[currentLesson.lesson_id]?.is_completed && (
+                  <p className="text-green-600 text-sm mt-1">✓ Đã hoàn thành</p>
+                )}
               </div>
               <div className="tab mt-3">
                 <NotesTab lessonId={currentLesson.lesson_id} />
@@ -151,6 +206,7 @@ const CourseDetailPage = () => {
             onLessonSelect={handleLessonSelect}
             onQuizSelect={handleQuizSelect}
             currentLessonId={currentLesson?.lesson_id}
+            lessonProgress={lessonProgress}
           />
         </div>
       </div>
@@ -193,23 +249,31 @@ const CourseDetailPage = () => {
             onLessonSelect={handleLessonSelect}
             onQuizSelect={handleQuizSelect}
             currentLessonId={currentLesson?.lesson_id}
+            lessonProgress={lessonProgress}
           />
 
           <div className="flex flex-col flex-1">
             {currentLesson && (
               <div className='pt-2'>
                 {currentLesson.video_url ? (
-                  <Video key={currentLesson.lesson_id} video_url={currentLesson.video_url}></Video>
+                  <Video 
+                    key={currentLesson.lesson_id} 
+                    video_url={currentLesson.video_url}
+                    onCompleted={handleVideoComplete}
+                  />
                 ) : (
                   <div className='flex flex-col items-center gap-10 border-red-500 border-2 rounded p-10'>
                     <TriangleAlert size={150} className='text-red-600'/>
                     <p className="text-center text-red-500 font-bold">Video hiện tại đang lỗi! Chúng tôi đang cố gắng khắc phục, bạn kiên nhẫn nhé!</p>
                   </div>
                 )}
-                <div className=" mb-3">
+                <div className="mb-3">
                   <h2 className="text-2xl font-bold">{currentLesson.title}</h2>
                   {currentLesson.duration && (
                     <p className="text-gray-500 mt-1">Thời lượng: {currentLesson.duration}</p>
+                  )}
+                  {lessonProgress[currentLesson.lesson_id]?.is_completed && (
+                    <p className="text-green-600 text-sm mt-1">✓ Đã hoàn thành</p>
                   )}
                 </div>
                 <div className={`${isMobile ? 'tab mt-5 ml-5' : 'tab mt-5'}`}>

@@ -191,9 +191,6 @@ export default function EditCoursePage({ params }: { params: Promise<{ id: strin
         if (!course) return;
         const chapterId = course.chapter[chapterIndex].chapter_id;
         const lessonTitle = "Bài học mới";
-
-        console.log('Creating lesson with chapter_id:', chapterId);
-
         try {
             const response = await api.post(`/lessons`, {
                 chapter_id: chapterId,
@@ -201,12 +198,8 @@ export default function EditCoursePage({ params }: { params: Promise<{ id: strin
                 slug: slugify(lessonTitle),
                 duration: "00:00"
             });
-
-            console.log('Lesson created response:', response.data);
-
             const newLesson = response.data.data || response.data;
             setNewlyCreatedLessons(prev => [...prev, newLesson.lesson_id]);
-
             updateCourseState((draft) => {
                 draft.chapter[chapterIndex].lessons.push({
                     lesson_id: newLesson.lesson_id,
@@ -266,16 +259,12 @@ export default function EditCoursePage({ params }: { params: Promise<{ id: strin
 
     const rollbackChanges = async () => {
         try {
-            // Xóa tất cả lessons mới tầo
             for (const lessonId of newlyCreatedLessons) {
                 await api.delete(`/lessons/${lessonId}`);
             }
-
-            // Xóa tất cả chapters mới tạo
             for (const chapterId of newlyCreatedChapters) {
                 await api.delete(`/chapters/${chapterId}`);
             }
-
             setNewlyCreatedChapters([]);
             setNewlyCreatedLessons([]);
             setHasUnsavedChanges(false);
