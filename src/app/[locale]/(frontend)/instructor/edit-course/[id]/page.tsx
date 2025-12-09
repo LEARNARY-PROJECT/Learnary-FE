@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
+import { ImageUploadDialog } from '@/components/UploadImageDialog';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, } from '@/components/ui/select';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger, } from "@/components/ui/accordion";
@@ -140,7 +141,6 @@ export default function EditCoursePage({ params }: { params: Promise<{ id: strin
     // --- HANDLERS (Thêm/Sửa/Xóa) ---
     const handleAddChapter = async () => {
         if (!course) return;
-
         try {
             const response = await api.post(`/chapters`, {
                 course_id: courseId,
@@ -314,7 +314,6 @@ export default function EditCoursePage({ params }: { params: Promise<{ id: strin
                     return;
                 }
 
-                // Gộp 'course' và 'videoStaging'
                 const finalPayload = JSON.parse(JSON.stringify(course)) as Course;
                 finalPayload.chapter.forEach((chap: Chapter) => {
                     chap.lessons.forEach((lesson: Lesson & { video_url?: string }) => {
@@ -448,8 +447,11 @@ export default function EditCoursePage({ params }: { params: Promise<{ id: strin
                             </div>
                             <div className="space-y-2">
                                 <Label>Ảnh bìa (URL)</Label>
-                                <Input value={course.thumbnail || ''} onChange={(e) => updateCourseState(d => d.thumbnail = e.target.value)} placeholder="https://..." />
-                                {/* TODO: Thay bằng component Upload Image */}
+                                <ImageUploadDialog
+                                    onUploadSuccess={(url) => {updateCourseState(d => d.thumbnail = url)}}
+                                    courseId={`${course.course_id}`}
+                                    userId={`${user?.id}`}
+                                />
                             </div>
                             <div className="space-y-2">
                                 <Label>Yêu cầu của khóa học</Label>

@@ -43,11 +43,9 @@ const CourseDetailPage = () => {
         const response = await api.get(`/courses/slug/${slug}`);
         const courseData: Course = response.data;
         setCourse(courseData);
-        
         if (courseData.course_id) {
           await fetchLessonProgress(courseData.course_id);
         }
-        
         if (courseData.chapter && courseData.chapter.length > 0) {
           const firstChapter = courseData.chapter[0];
           if (firstChapter.lessons && firstChapter.lessons.length > 0) {
@@ -82,7 +80,7 @@ const CourseDetailPage = () => {
     try {
       const response = await api.get(`/lesson-progress/course/${courseId}`);
       const progressData: LessonProgressData[] = response.data.data || [];
-      
+    
       const progressMap: LessonProgressMap = {};
       progressData.forEach((item) => {
         progressMap[item.lesson_id] = {
@@ -92,7 +90,8 @@ const CourseDetailPage = () => {
       });
       setLessonProgress(progressMap);
     } catch (error) {
-      console.error('Error fetching lesson progress:', error);
+      console.log(error)
+      toast.error('Error fetching lesson progress:');
     }
   };
 
