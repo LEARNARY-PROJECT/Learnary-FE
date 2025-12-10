@@ -59,7 +59,7 @@ export default function CourseHeader({
         </div>
         <div className="flex flex-wrap items-center gap-4 mt-4 font-roboto text-sm text-gray-300">
           <div className="flex items-center gap-1">
-            Created by <span className="text-purple-400">{created_by}</span>
+            Teach by <span className="text-yellow-400 text-xl font-roboto-condensed-bold">{created_by}</span>
           </div>
           <div className="flex items-center gap-1">
             <Clock className="w-4 h-4" />

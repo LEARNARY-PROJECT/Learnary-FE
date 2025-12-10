@@ -140,9 +140,9 @@ export default function CourseDetailPage() {
                 title={courseData.title ?? "Không có tiêu đề khoá học"}
                 description={courseData.description ?? "Không có mô tả khoá học"}
                 /* rating={courseData.rating} */
-                total_reviews={0}
-                total_students={0}
-                /* created_by={courseData.created_by} */
+                total_reviews={courseData.feedbacks.length}
+                total_students={courseData.learnerCourses.length}
+                created_by={courseData.instructor?.user?.fullName || "Chưa lấy được thông tin"} 
                 /* last_updated={courseData.last_updated} */
                 available_language={courseData.available_language ?? DEFAULT_LANGUAGE}
                 level_name={courseData.level?.level_name ?? "Chưa có cấp độ cho khoá học này"}
