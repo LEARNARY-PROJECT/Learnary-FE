@@ -53,7 +53,6 @@
         }, [slug]);
 
         const handleBuyNow = async () => {
-            // 1. Kiểm tra đăng nhập
             if (!isLoggedIn || !user?.id) {
                 toast.error("Vui lòng đăng nhập để mua khóa học!");
                 router.push('/login');

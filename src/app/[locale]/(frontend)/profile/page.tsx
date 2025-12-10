@@ -76,12 +76,13 @@ type AccountSecurity = {
   createdAt?: string;
   updatedAt?: string;
 }
-type UpdateUserData = Omit<UserProps, "user_id" | "role" | "isActive" | "last_login" | "email" |"createdAt">
+type UpdateUserData = Omit<UserProps, "user_id" | "role" | "isActive" | "last_login" | "email" | "createdAt">
 
 export default function ProfilePage() {
   const isMobile = useIsMobile();
   const { user, logout } = useAuth();
   const router = useRouter();
+  const [isClient, setIsClient] = useState(false);
   const [userInfo, setUserInfo] = useState<UserProps | null>(null);
   const [accountSecurity, setAccountSecurity] = useState<AccountSecurity | null>(null);
   const [instructorInfo, setInstructorInfo] = useState<InstructorProps | null>(null);
@@ -91,6 +92,12 @@ export default function ProfilePage() {
   const [isEditing, setIsEditing] = useState(false);
   const [isEditingInstructor, setIsEditingInstructor] = useState(false);
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
+  const [oldPassword, setOldPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [isSubmittingPassword, setIsSubmittingPassword] = useState(false);
 
   const [errors, setErrors] = useState<Partial<Record<keyof UpdateUserData, string>>>({});
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -194,6 +201,10 @@ export default function ProfilePage() {
   }
 
   useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  useEffect(() => {
     const takeUserInfo = async () => {
       try {
         if (!user) return;
@@ -206,7 +217,7 @@ export default function ProfilePage() {
           setFormData({
             fullName: userData.fullName || "", phone: userData.phone || "", avatar: userData.avatar || "",
             dateOfBirth: userData.dateOfBirth, address: userData.address || "", city: userData.city || "",
-            nation: userData.nation || "", bio: userData.bio || "", 
+            nation: userData.nation || "", bio: userData.bio || "",
           });
         }
       } catch (error) { console.log("Lỗi fetch user", error) }
@@ -221,7 +232,7 @@ export default function ProfilePage() {
         const instrRes = await api.get(`/instructors/user/${user.id}`);
         if (instrRes.data && instrRes.data.data) {
           setInstructorInfo(instrRes.data.data);
-          
+
           // Load bank account info
           const bankRes = await api.get(`/bank-account/${instrRes.data.data.instructor_id}`);
           if (bankRes.data && bankRes.data.data) {
@@ -267,6 +278,36 @@ export default function ProfilePage() {
       toast.error("Đã có lỗi xảy ra");
     }
   };
+  const handlePasswordChange = async () => {
+    if (!oldPassword || !newPassword || !confirmPassword) {
+      toast.error("Nhập thiếu thông tin!")
+      return;
+    }
+    if (newPassword != confirmPassword) {
+      toast.error("Mật khẩu mới và mật khẩu xác nhận không trùng khớp")
+      return
+    }
+    try {
+      setIsSubmittingPassword(true);
+      await api.put('/auth/changePassword', {
+        oldPassword,
+        newPassword
+      })
+      toast.success("Đổi mật khẩu thành công!");
+      setIsChangingPassword(false)
+      setOldPassword("")
+      setNewPassword("")
+      setConfirmPassword("")
+    } catch (error) {
+      console.log(error)
+      toast.error("Có lỗi khi đổi mật khẩu, vui lòng thử lại!")
+    } finally {
+      setIsSubmittingPassword(false)
+    }
+  }
+  if (!isClient) {
+    return null;
+  }
 
   return (
     <ProtectedRoute>
@@ -350,7 +391,6 @@ export default function ProfilePage() {
                     <TabsContent value="learner-profile">
                       <div className="mt-6 bg-white rounded-2xl border-2 border-gray-200 shadow-sm p-6">
                         <div className={`grid gap-6 ${isMobile ? 'grid-cols-1' : 'grid-cols-2'}`}>
-                          {/* Form Fields */}
                           <div>
                             <Label className="text-gray-400 text-sm mb-1">Họ và tên</Label>
                             {isEditing ? <Input value={formData.fullName} onChange={(e) => handleInputChange('fullName', e.target.value)} className={errors.fullName ? 'border-red-500' : ''} /> : <p className="font-bold text-gray-800">{userInfo.fullName}</p>}
@@ -387,7 +427,6 @@ export default function ProfilePage() {
                       </div>
                     </TabsContent>
 
-                    {/* ---  INSTRUCTOR PROFILE --- */}
                     {userInfo.role === 'INSTRUCTOR' && (
                       <TabsContent value="instructor-profile">
                         <div className="mt-6 bg-white rounded-2xl border-2 border-gray-200 shadow-sm p-6">
@@ -492,8 +531,42 @@ export default function ProfilePage() {
                         <h3 className="font-bold text-xl text-gray-900 mb-6">Tài khoản</h3>
                         <div className="space-y-4">
                           <div className="flex justify-between items-center pb-4 border-b">
-                            <div><p className="font-bold text-gray-800">Mật khẩu</p><p className="text-gray-400 text-sm">**********</p></div>
-                            <Button variant="outline">Đổi mật khẩu</Button>
+                            {isChangingPassword ? (
+                              <>
+                                <div className="flex flex-col gap-5">
+                                  <div className="flex flex-col gap-5">
+                                    <Input type="password" value={oldPassword} onChange={e => setOldPassword(e.target.value)} placeholder="Mật khẩu cũ">
+                                    </Input>
+                                    <Input type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} placeholder="Mật khẩu mới">
+                                    </Input>
+                                    <Input type="password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} placeholder="Nhập lại mật khẩu mới">
+                                    </Input>
+                                  </div>
+                                  <div className="flex gap-4">
+                                    <Button className="cursor-pointer" type="button" variant={"outline"} onClick={() => {
+                                      setIsChangingPassword(false);
+                                      setOldPassword('');
+                                      setNewPassword('');
+                                      setConfirmPassword('');
+                                    }}>Hủy</Button>
+
+                                    <Button type="button" variant={"outline"} onClick={handlePasswordChange} className={`${isSubmittingPassword ? 'bg-green-600' : ' border border-green-600 hover:text-white cursor-pointer hover:bg-green-600 text-green-600'}`}>
+                                      {isSubmittingPassword ? "Đang xử lý" : "Lưu mật khẩu"}
+                                    </Button>
+                                  </div>
+                                </div>
+                              </>
+                            ) : (
+                              <div className="flex flex-col gap-2 w-full">
+                                <div>
+                                  <p className="font-bold text-gray-800">Mật khẩu</p>
+                                </div>
+                                <div className="flex gap-2 items-center w-full justify-between">
+                                  <p className="text-sm">**********</p>
+                                  <Button variant="outline" type="button" onClick={() => setIsChangingPassword(true)} className="cursor-pointer">Đổi mật khẩu</Button>
+                                </div>
+                              </div>
+                            )}
                           </div>
                           <div className="flex justify-between">
                             <div className="flex justify-between items-center pb-4 border-b">
@@ -502,19 +575,19 @@ export default function ProfilePage() {
                             {accountSecurity?.email_verified ? (
                               <div>
                                 <Badge className="bg-green-700 text-white">
-                                    Email đã được xác thực
+                                  Email đã được xác thực
                                 </Badge>
-                                </div>
+                              </div>
                             ) : (
                               <div>
-                              <Link href={`/verify-email/`}>
-                                <Button variant={'outline'} className="border-2 border-amber-700 text-amber-700 cursor-pointer hover:text-white hover:bg-amber-700">
-                                  Xác thực email
-                                </Button>
-                              </Link>
+                                <Link href={`/verify-email/`}>
+                                  <Button variant={'outline'} className="border-2 border-amber-700 text-amber-700 cursor-pointer hover:text-white hover:bg-amber-700">
+                                    Xác thực email
+                                  </Button>
+                                </Link>
                               </div>
                             )}
-                            
+
                           </div>
                           <div className="flex justify-between items-center pb-4 border-b">
                             <div><p className="font-bold text-gray-800">User ID</p><p className="text-gray-400 text-xs">{userInfo.user_id}</p></div>
@@ -526,12 +599,13 @@ export default function ProfilePage() {
                   </Tabs>
                 </div>
               </div>
-            )}
-          </div>
+            )
+            }
+          </div >
         ) : (
           <div className="mt-6 text-center"><p>Vui lòng đăng nhập để xem hồ sơ.</p></div>
         )}
-      </div>
-    </ProtectedRoute>
+      </div >
+    </ProtectedRoute >
   );
 }

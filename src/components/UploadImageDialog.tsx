@@ -37,7 +37,7 @@ export function ImageUploadDialog({ currentImageUrl, onUploadSuccess, courseId, 
             } else {
                 setPreviewUrl(uploadedURL);
                 onUploadSuccess(uploadedURL);
-                toast.success("Upload thumbnail thành công!")
+                toast.success("Thay đổi thumbnail thành công!")
             }
         } catch (error) {
             console.log(error)
@@ -76,6 +76,7 @@ export function ImageUploadDialog({ currentImageUrl, onUploadSuccess, courseId, 
             fileInputRef.current.value=""
         }
     }
+
     return (
         <div className="space-y-3">
             {previewUrl && (
@@ -110,7 +111,7 @@ export function ImageUploadDialog({ currentImageUrl, onUploadSuccess, courseId, 
                             <>
                                 <Upload size={18} />
                                 <span className="text-sm">
-                                    {previewUrl ? 'Thay đổi ảnh bìa' : 'Chọn ảnh bìa'}
+                                    {previewUrl ? 'Thay đổi ảnh' : 'Chọn ảnh'}
                                 </span>
                             </>
                         )}

@@ -41,8 +41,8 @@ const ChapterBox: React.FC<ChapterBoxProps> = ({
     return (
         <ScrollArea className={`${isMobile ? 'h-screen w-full' : 'h-screen w-[500px]'}`}>
             <div className={`container ${isMobile ? `w-full` : `w-fit`}`}>
-                <Accordion defaultValue='item-0' type='single' collapsible className={`${isMobile ? `w-full justify-items-center` : 'w-[470px]'} p-2 cursor-pointer flex flex-col gap-1 h-fit`}>
-                    <ScrollArea className={`${isMobile ? 'w-full h-[calc(100vh-100px)] rounded-md' : 'w-[500px] h-[calc(100vh-100px)] rounded-md'}`}>
+                <Accordion defaultValue='item-0' type='single' collapsible className={`${isMobile ? `w-screen justify-items-center` : 'w-[470px]'} p-2 cursor-pointer flex flex-col gap-1 h-fit`}>
+                    <ScrollArea className={`${isMobile ? 'w-full p-3 h-[calc(100vh-100px)] rounded-md' : 'w-[500px] h-[calc(100vh-100px)] rounded-md'}`}>
                         {chapters.map((chapter, chapterIndex) => {
                             const totalLesson = chapter.lessons?.length || 0;
                             const countCompletedLesson = chapter.lessons?.filter(lesson => 

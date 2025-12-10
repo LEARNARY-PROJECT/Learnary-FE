@@ -30,13 +30,13 @@ export default function CourseHeader({
   return (
     <div className="bg-gray-900 text-white py-8 px-4 md:px-10">
       <div className="max-w-7xl mx-auto">
-        <Badge className="mb-3 bg-orange-600 text-white hover:bg-gray-100 cursor-default">
+        <Badge className="mb-3 bg-orange-600 text-white hover:bg-gray-100 cursor-default ">
           {category_name}
         </Badge>
         <h1 className="font-rosario-bold text-3xl md:text-4xl mb-4">
           {title}
         </h1>
-        <p className="font-roboto text-gray-200 text-lg mb-6 max-w-4xl">
+        <p className="font-roboto text-gray-200 text-lg mb-6 max-w-4xl wrap-break-word">
           {description}
         </p>
         <div className="flex flex-wrap items-center gap-4 font-roboto text-sm">
