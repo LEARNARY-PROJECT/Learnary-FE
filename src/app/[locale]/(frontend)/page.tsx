@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import Hero from "@/components/Hero";
 import ListTopic from "@/components/ListTopic";
 import ListCourseCard from "@/components/ListCourseCard";
+import ListComboCourse from "@/components/ListComboCourse";
 
 export default function HomePage() {
   const [isLoading, setIsLoading] = useState(true);
@@ -31,6 +32,7 @@ export default function HomePage() {
       <section className="min-h-screen shadow-2xl pb-20">
         <ListTopic />
         <ListCourseCard title="Tất cả khoá học" />
+        <ListComboCourse title="Combo khoá học" />
       </section>
     </div>
   );
