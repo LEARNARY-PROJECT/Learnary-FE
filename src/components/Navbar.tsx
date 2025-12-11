@@ -6,7 +6,6 @@ import LanguageSwitcher from "./LanguageSwitcher";
 import {
   Bars3Icon,
   XMarkIcon,
-  ShoppingBagIcon,
   UserIcon,
   ArrowRightOnRectangleIcon,
 } from "@heroicons/react/24/outline";
@@ -17,6 +16,10 @@ import { useAuth } from "@/app/context/AuthContext";
 import Image from 'next/image'
 import { useRouter } from "next/navigation";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
+import {
+  Heart,
+} from "lucide-react";
+
 
 export const NavbarLinks = (userRole?: string) => {
   const t = useTranslations("Navbar");
@@ -115,8 +118,8 @@ function Navbar() {
               </div>
             )}
           </Link >
-          <Link href="/cart" title={"Giỏ hàng"}>
-            <ShoppingBagIcon className="h-6 w-6 cursor-pointer " />
+          <Link href="/my-favorite" title={"Giỏ hàng"}>
+            <Heart className="h-6 w-6 cursor-pointer hover:text-pink-600"></Heart>
           </Link>
           <Link href="/logout" onClick={handleLogout} title={t("logout")}>
             <ArrowRightOnRectangleIcon className="h-6 w-6 cursor-pointer hover:text-red-600" />

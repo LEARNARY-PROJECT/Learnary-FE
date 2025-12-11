@@ -5,13 +5,16 @@ import { Button } from '@/components/ui/button';
 import { PlayCircle, FileText, Award, Infinity, Smartphone, Download } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { PLACEHOLDER_THUMBNAIL } from '@/const/urls';
-import Link from 'next/link';
+// import Link from 'next/link';
+import FavoriteButton from '@/components/FavoriteButton';
+
 interface CourseSidebarProps {
   thumbnail?: string | null;
   price: number;
   original_price?: number;
   sale_off?: number;
   course_slug: string;
+  course_id: string;
   includes: Array<{
     icon: string;
     text: string;
@@ -20,7 +23,7 @@ interface CourseSidebarProps {
   isLoading?: boolean;
 }
 
-export default function CourseSidebar({ thumbnail, price, original_price, sale_off, includes, onBuyNow, isLoading }: CourseSidebarProps) {//course_slug,
+export default function CourseSidebar({ thumbnail, price, original_price, sale_off, includes, course_id, onBuyNow, isLoading }: CourseSidebarProps) {//course_slug,
   const t = useTranslations("Course-Detail-Sidebar");
   original_price = 1200000
   sale_off = 50
@@ -70,18 +73,21 @@ export default function CourseSidebar({ thumbnail, price, original_price, sale_o
             {t("btnEnroll")}
           </Button>
         </Link> */}
-        <Button  
+        {/* <Button  
           className="w-full mb-3 font-roboto-bold py-6 cursor-pointer bg-pink-600 hover:bg-pink-700 text-lg text-white" 
         >
           <Link href={``}>{t("btnCard")}</Link> 
-        </Button> 
-        <Button 
-          className="w-full mb-3 bg-purple-600 hover:bg-purple-700 text-white font-roboto-bold py-6 text-lg cursor-pointer"
-          onClick={onBuyNow}     // Gọi hàm
-          disabled={isLoading}   // Disable khi đang tải
-        >
-          {isLoading ? 'Đang tạo link...' : 'Mua ngay'}
-        </Button>
+        </Button>  */}
+        <FavoriteButton courseId={course_id} variant="button" className="w-full mb-3 font-roboto-bold py-6 cursor-pointer bg-pink-600 hover:bg-pink-700 text-lg text-white" />
+        <div className="flex gap-2 mb-3">
+          <Button 
+            className="flex-1 bg-purple-600 hover:bg-purple-700 text-white font-roboto-bold py-6 text-lg cursor-pointer"
+            onClick={onBuyNow}
+            disabled={isLoading}
+          >
+            {isLoading ? 'Đang tạo link...' : 'Mua ngay'}
+          </Button>
+        </div>
 
         <div className="space-y-3">
           <h3 className="font-roboto-bold text-sm mb-4">{t("courseIncludes")}</h3>

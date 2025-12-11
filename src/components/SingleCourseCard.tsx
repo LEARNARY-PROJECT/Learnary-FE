@@ -12,12 +12,10 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import {
-  Heart,
-} from "lucide-react"
 import { formatPriceVND } from "@/utils/convert_price";
 import { Course } from "@/type/course.type";
 import { PLACEHOLDER_THUMBNAIL,DEFAULT_LANGUAGE } from "@/const/urls";
+import FavoriteButton from "@/components/FavoriteButton";
 
 interface SingleCourseCardProps {
   course: Course;
@@ -47,13 +45,16 @@ const SingleCourseCard: React.FC<SingleCourseCardProps> = ({ course }) => {
         <TooltipTrigger asChild>
           <div className={wrapperClass}>
             <div className="relative" style={{ height: imageHeight, width: "100%" }}>
-              <Image
+              
+              <Link href={`/course-detail/${dataCourse.slug}`}>
+                <Image
                 width={`${imageWidth}`}
                 height={`${imageHeight}`}
                 src={dataCourse.thumbnail || PLACEHOLDER_THUMBNAIL}
                 alt={dataCourse.title ?? "Course thumbnail"}
                 className={imageClass}
               />
+              </Link>
               <div className="absolute top-2 left-2 z-10">
                 <Badge className="bg-amber-600">
                   <p className="text-sm text-white font-roboto-condensed">
@@ -81,9 +82,7 @@ const SingleCourseCard: React.FC<SingleCourseCardProps> = ({ course }) => {
                   {formatPriceVND(dataCourse.price ?? 0)}
                 </div>
                 <div className={buttonWrapperClass}>
-                  <Button size={"icon"} className="group border-pink-600 border-2 bg-white cursor-pointer hover:border-pink-600 hover:bg-pink-600">
-                    <Heart className="text-pink-600 group-hover:text-white"></Heart>
-                  </Button>
+                  <FavoriteButton courseId={dataCourse.course_id} />
                   <Button asChild className="bg-pink-600 hover:bg-pink-500 transition-colors">
                     <Link href={`/course-detail/${dataCourse.slug}`}>
                       Xem chi tiết

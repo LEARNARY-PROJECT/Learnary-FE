@@ -18,7 +18,8 @@ import api from '@/app/lib/axios';
 import { isAxiosError } from 'axios'; // [SỬA] Dùng isAxiosError
 import { useAuth } from '@/app/context/AuthContext';
 import { toast } from 'sonner';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Plus, ArrowLeft } from 'lucide-react';
+import Link from 'next/link';
 type Course = {
   course_id: string;
   title: string;
@@ -106,7 +107,20 @@ export default function MyCoursesPage() {
   }
   return (
     <div className="container mx-auto p-6 space-y-6">
-      <h1 className="text-2xl font-bold">Khóa học của tôi</h1>
+      <Link href="/instructor">
+        <Button variant="ghost" className="mb-4 cursor-pointer">
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Quay lại khu vực giảng viên
+        </Button>
+      </Link>
+      <div className="flex justify-between items-center">
+        <h1 className="text-2xl font-bold">Khóa học của tôi</h1>
+        <Link href="/instructor/create-course">
+          <Button className="shadow-lg hover:shadow-xl transition-all cursor-pointer">
+            <Plus className="mr-2 h-4 w-4" /> Tạo khóa học mới
+          </Button>
+        </Link>
+      </div>
 
       <Tabs
         value={filter}
@@ -183,10 +197,11 @@ function CourseCard({
         <Badge variant={badgeVariant}>{course.status}</Badge>
       </CardContent>
       <CardFooter className="gap-2">
-        <Button variant="outline" onClick={() => onView(course.course_id)}>
+        <Button variant="outline" className="cursor-pointer" onClick={() => onView(course.course_id)}>
           Xem
         </Button>
         <Button
+          className="cursor-pointer"
           onClick={() => onEdit(course.course_id)}
           disabled={!isDraft}
           title={

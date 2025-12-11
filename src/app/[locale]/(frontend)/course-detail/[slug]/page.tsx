@@ -187,6 +187,7 @@
                         <div className="p-1 border rounded rounded-t-xl">
                             <CourseSidebar
                                 course_slug={courseData.slug || "No Slug Found!"}
+                                course_id={courseData.course_id}
                                 thumbnail={courseData.thumbnail || PLACEHOLDER_THUMBNAIL}
                                 price={courseData.price || 0}
                                 original_price={undefined}

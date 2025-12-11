@@ -18,27 +18,24 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { toast } from 'sonner';
 
-// API Helper (Giả sử bạn sẽ có API thống kê sau này)
-// import api from '@/app/lib/axios';
+// API Helper
+import api from '@/app/lib/axios';
 
-// --- MOCK DATA (Dữ liệu giả lập để hiển thị biểu đồ) ---
-const revenueData = [
-  { name: 'T1', total: 1500000 },
-  { name: 'T2', total: 2300000 },
-  { name: 'T3', total: 3200000 },
-  { name: 'T4', total: 4500000 },
-  { name: 'T5', total: 3800000 },
-  { name: 'T6', total: 5200000 },
-  { name: 'T7', total: 6100000 },
-];
+// Type definitions
+interface RevenueData {
+  name: string;
+  total: number;
+}
 
-const recentSales = [
-  { id: 1, user: 'Nguyễn Văn A', course: 'ReactJS Nâng Cao', amount: 599000, email: 'a@example.com', avatar: '' },
-  { id: 2, user: 'Trần Thị B', course: 'NodeJS Cơ Bản', amount: 399000, email: 'b@example.com', avatar: '' },
-  { id: 3, user: 'Lê Văn C', course: 'Fullstack Next.js', amount: 899000, email: 'c@example.com', avatar: '' },
-  { id: 4, user: 'Phạm Thị D', course: 'ReactJS Nâng Cao', amount: 599000, email: 'd@example.com', avatar: '' },
-  { id: 5, user: 'Hoàng Văn E', course: 'Docker cho Dev', amount: 299000, email: 'e@example.com', avatar: '' },
-];
+interface Enrollment {
+  id: string;
+  user: string;
+  email: string;
+  avatar: string;
+  course: string;
+  amount: number;
+  enrolledAt: string;
+}
 
 export default function InstructorDashboard() {
   const [isLoading, setIsLoading] = useState(true);
@@ -46,12 +43,16 @@ export default function InstructorDashboard() {
     totalRevenue: 0,
     totalStudents: 0,
     totalCourses: 0,
+    publishedCourses: 0,
     averageRating: 0,
+    revenueGrowth: 0,
   });
+  const [revenueData, setRevenueData] = useState<RevenueData[]>([]);
+  const [recentEnrollments, setRecentEnrollments] = useState<Enrollment[]>([]);
   const { user, isLoggedIn, isLoading: isAuthLoading } = useAuth();
   const router = useRouter();
 
-  // Giả lập fetch dữ liệu
+  // Fetch dữ liệu thật từ API
   useEffect(() => {
     if (isAuthLoading) return;
 
@@ -60,18 +61,30 @@ export default function InstructorDashboard() {
       router.push(`/`); 
       return;
     }
+
     const fetchData = async () => {
-      // Trong thực tế, bạn sẽ gọi: await api.get('/instructor/stats');
-      setTimeout(() => {
-        setStats({
-          totalRevenue: 24500000,
-          totalStudents: 1234,
-          totalCourses: 8,
-          averageRating: 4.8,
-        });
+      try {
+        setIsLoading(true);
+        const userId = user?.id;
+
+        // Gọi 3 API song song
+        const [overviewRes, revenueRes, enrollmentsRes] = await Promise.all([
+          api.get(`/instructor/stats/overview/${userId}`),
+          api.get(`/instructor/stats/revenue/${userId}`),
+          api.get(`/instructor/stats/enrollments/${userId}?limit=5`),
+        ]);
+
+        setStats(overviewRes.data.data);
+        setRevenueData(revenueRes.data.data);
+        setRecentEnrollments(enrollmentsRes.data.data);
+      } catch (error) {
+        console.error('Error fetching instructor stats:', error);
+        toast.error('Không thể tải dữ liệu thống kê');
+      } finally {
         setIsLoading(false);
-      }, 1000);
+      }
     };
+
     fetchData();
   }, [isAuthLoading, isLoggedIn, user, router]);
 
@@ -100,16 +113,16 @@ export default function InstructorDashboard() {
         </div>
         <div className="flex gap-3">
           <Link href="/instructor/wallet">
-            <Button variant="outline">Quản lý ví</Button>
+            <Button variant="outline" className="cursor-pointer">Quản lý ví</Button>
           </Link>
           <Link href="/instructor/my-courses">
-            <Button variant="outline">Quản lý khóa học</Button>
+            <Button variant="outline" className="cursor-pointer">Quản lý khóa học</Button>
           </Link>
           <Link href="/instructor/my-combo">
-            <Button variant="outline">Quản lý combo</Button>
+            <Button variant="outline" className="cursor-pointer">Quản lý combo</Button>
           </Link>
           <Link href="/instructor/create-course">
-            <Button className="shadow-lg hover:shadow-xl transition-all">
+            <Button className="shadow-lg hover:shadow-xl transition-all cursor-pointer">
               <Plus className="mr-2 h-4 w-4" /> Tạo khóa học mới
             </Button>
           </Link>
@@ -121,26 +134,26 @@ export default function InstructorDashboard() {
         <StatsCard 
           title="Tổng doanh thu" 
           value={formatCurrency(stats.totalRevenue)} 
-          icon={DollarSign} 
-          trend="+20.1% so với tháng trước"
+          icon={DollarSign}
+          note={stats.revenueGrowth >= 0 
+            ? `+${stats.revenueGrowth}% so với tháng trước` 
+            : `${stats.revenueGrowth}% so với tháng trước`}
         />
         <StatsCard 
           title="Học viên" 
-          value={`+${stats.totalStudents}`} 
-          icon={Users} 
-          trend="+180 học viên mới"
+          value={`${stats.totalStudents}`} 
+          icon={Users}
         />
         <StatsCard 
           title="Khóa học" 
           value={stats.totalCourses.toString()} 
-          icon={BookOpen} 
-          trend="2 khóa đang chờ duyệt"
+          icon={BookOpen}
+          note={`Bạn đã có ${stats.publishedCourses} khóa học public`}
         />
         <StatsCard 
           title="Đánh giá trung bình" 
-          value={`${stats.averageRating}/5.0`} 
-          icon={Star} 
-          trend="Dựa trên 450 đánh giá"
+          value={stats.averageRating > 0 ? `${stats.averageRating}/5.0` : 'Chưa có'} 
+          icon={Star}
         />
       </div>
 
@@ -151,35 +164,51 @@ export default function InstructorDashboard() {
         <Card className="col-span-4">
           <CardHeader>
             <CardTitle>Biểu đồ doanh thu</CardTitle>
-            <CardDescription>Doanh thu trong 7 tháng gần nhất</CardDescription>
+            <CardDescription>Doanh thu trong 12 tháng gần nhất</CardDescription>
           </CardHeader>
           <CardContent className="pl-2">
             <div className="h-[350px] w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={revenueData}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
-                  <XAxis 
-                    dataKey="name" 
-                    stroke="#888888" 
-                    fontSize={12} 
-                    tickLine={false} 
-                    axisLine={false} 
-                  />
-                  <YAxis 
-                    stroke="#888888" 
-                    fontSize={12} 
-                    tickLine={false} 
-                    axisLine={false}
-                    tickFormatter={(value) => `${value / 1000000}M`} 
-                  />
-                  <Tooltip 
-                    cursor={{ fill: '#f4f4f5' }}
-                    contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
-                    formatter={(value: number) => [formatCurrency(value), 'Doanh thu']}
-                  />
-                  <Bar dataKey="total" fill="#0f172a" radius={[4, 4, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
+              {revenueData.length > 0 ? (
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={revenueData} barCategoryGap="20%">
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
+                    <XAxis 
+                      dataKey="name" 
+                      stroke="#888888" 
+                      fontSize={12} 
+                      tickLine={false} 
+                      axisLine={false} 
+                    />
+                    <YAxis 
+                      stroke="#888888" 
+                      fontSize={12} 
+                      tickLine={false} 
+                      axisLine={false}
+                      tickFormatter={(value) => {
+                        if (value === 0) return '0đ';
+                        if (value >= 1000000) return `${(value / 1000000).toFixed(1)}tr`;
+                        if (value >= 1000) return `${(value / 1000).toFixed(0)}k`;
+                        return `${value}đ`;
+                      }} 
+                    />
+                    <Tooltip 
+                      cursor={{ fill: '#f4f4f5' }}
+                      contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
+                      formatter={(value: number) => [formatCurrency(value), 'Doanh thu']}
+                    />
+                    <Bar 
+                      dataKey="total" 
+                      fill="#0f172a" 
+                      radius={[4, 4, 0, 0]}
+                      maxBarSize={60}
+                    />
+                  </BarChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="flex items-center justify-center h-full text-muted-foreground">
+                  Chưa có dữ liệu doanh thu
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -189,25 +218,25 @@ export default function InstructorDashboard() {
           <CardHeader>
             <CardTitle>Đăng ký gần đây</CardTitle>
             <CardDescription>
-              Bạn có {recentSales.length} lượt đăng ký mới trong hôm nay.
+              Bạn có {recentEnrollments.length} lượt đăng ký mới.
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-8">
-              {recentSales.map((sale) => (
-                <div key={sale.id} className="flex items-center">
+              {recentEnrollments.map((enrollment) => (
+                <div key={enrollment.id} className="flex items-center">
                   <Avatar className="h-9 w-9">
-                    <AvatarImage src={sale.avatar} alt="Avatar" />
-                    <AvatarFallback>{sale.user.charAt(0)}</AvatarFallback>
+                    <AvatarImage src={enrollment.avatar} alt="Avatar" />
+                    <AvatarFallback>{enrollment.user.charAt(0)}</AvatarFallback>
                   </Avatar>
                   <div className="ml-4 space-y-1">
-                    <p className="text-sm font-medium leading-none">{sale.user}</p>
+                    <p className="text-sm font-medium leading-none">{enrollment.user}</p>
                     <p className="text-xs text-muted-foreground line-clamp-1">
-                      Đăng ký: {sale.course}
+                      Đăng ký: {enrollment.course}
                     </p>
                   </div>
                   <div className="ml-auto font-medium text-sm text-green-600">
-                    +{formatCurrency(sale.amount)}
+                    +{formatCurrency(enrollment.amount)}
                   </div>
                 </div>
               ))}
@@ -223,7 +252,7 @@ export default function InstructorDashboard() {
 }
 
 // --- Component con: Card Thống kê ---
-function StatsCard({ title, value, icon: Icon, trend }: { title: string, value: string, icon: React.ComponentType<{ className?: string }>, trend: string }) {
+function StatsCard({ title, value, icon: Icon, note }: { title: string, value: string, icon: React.ComponentType<{ className?: string }>, note?: string }) {
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -234,9 +263,11 @@ function StatsCard({ title, value, icon: Icon, trend }: { title: string, value: 
       </CardHeader>
       <CardContent>
         <div className="text-2xl font-bold">{value}</div>
-        <p className="text-xs text-muted-foreground mt-1">
-          {trend}
-        </p>
+        {note && (
+          <p className="text-xs text-muted-foreground mt-1">
+            {note}
+          </p>
+        )}
       </CardContent>
     </Card>
   );
