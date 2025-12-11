@@ -35,6 +35,8 @@ export type Course = {
   category?: Category;
   instructor?: InstructorWithData;
   level?: Level;
+  feedbacks?: FeedBack[];
+  learnerCourses?: LearnerCourse[];
 }
 
 export type Quiz = {

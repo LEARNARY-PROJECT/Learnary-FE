@@ -140,8 +140,8 @@ export default function CourseDetailPage() {
                 title={courseData.title ?? "Không có tiêu đề khoá học"}
                 description={courseData.description ?? "Không có mô tả khoá học"}
                 /* rating={courseData.rating} */
-                total_reviews={courseData.feedbacks.length}
-                total_students={courseData.learnerCourses.length}
+                total_reviews={courseData.feedbacks?.length ?? 0}
+                total_students={courseData.learnerCourses?.length ?? 0}
                 created_by={courseData.instructor?.user?.fullName || "Chưa lấy được thông tin"} 
                 /* last_updated={courseData.last_updated} */
                 available_language={courseData.available_language ?? DEFAULT_LANGUAGE}
@@ -200,6 +200,7 @@ export default function CourseDetailPage() {
 
                         <CourseSidebar
                             course_slug={courseData.slug || "No Slug Found!"}
+                            course_id={courseData.course_id}
                             thumbnail={courseData.thumbnail || PLACEHOLDER_THUMBNAIL}
                             price={courseData.price || 0}
                             original_price={undefined}

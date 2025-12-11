@@ -12,7 +12,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import {
-  Heart,
+  // Heart,
   Package,
 } from "lucide-react"
 import { formatPriceVND } from "@/utils/convert_price";
@@ -116,9 +116,9 @@ const ComboCourse: React.FC<ComboCourseProps> = ({ combo }) => {
                   </span>
                 </div>
                 <div className={buttonWrapperClass}>
-                  <Button size={"icon"} className="group border-pink-600 border-2 bg-white cursor-pointer hover:border-pink-600 hover:bg-pink-600">
+                  {/* <Button size={"icon"} className="group border-pink-600 border-2 bg-white cursor-pointer hover:border-pink-600 hover:bg-pink-600">
                     <Heart className="text-pink-600 group-hover:text-white"></Heart>
-                  </Button>
+                  </Button> */}
                   <Button asChild className="bg-pink-600 hover:bg-pink-500 transition-colors">
                     <Link href={`/combo/${combo.group_id}`}>
                       Xem chi tiết

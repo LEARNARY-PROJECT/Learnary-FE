@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import CreateComboDialog from "@/components/CreateComboDialog";
 import EditComboDialog from "@/components/EditComboDialog";
-import { Plus, Edit, Trash2, Package, Star, Calendar, Percent } from "lucide-react";
+import { Plus, Edit, Trash2, Package, Star, Calendar, Percent, ArrowLeft } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import api from "@/app/lib/axios";
 import { useIsMobile } from "@/hooks/useIsMobile";
+import Link from "next/link";
 
 export default function MyComboPage() {
   const [combos, setCombos] = useState<Group[]>([]);
@@ -115,6 +116,12 @@ export default function MyComboPage() {
 
   return (
     <div className="container mx-auto py-8 px-4">
+      <Link href="/instructor">
+        <Button variant="ghost" className="mb-4 cursor-pointer">
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Quay lại khu vực giảng viên
+        </Button>
+      </Link>
       <div className={`${isMobile ? 'flex-col gap-5' : 'items-center justify-between mb-8'} flex `}>
         <div className="flex w-full justify-center">
           <h1 className="text-3xl font-bold font-roboto-condensed-bold self-center">Combo Khóa Học của bạn</h1>
@@ -173,7 +180,7 @@ export default function MyComboPage() {
             <p className="text-gray-600 mb-4">
               Bắt đầu tạo combo khóa học đầu tiên của bạn
             </p>
-            <Button onClick={() => setCreateDialogOpen(true)}>
+            <Button onClick={() => setCreateDialogOpen(true)} className="cursor-pointer">
               <Plus className="h-4 w-4 mr-2" />
               Tạo Combo Đầu Tiên
             </Button>

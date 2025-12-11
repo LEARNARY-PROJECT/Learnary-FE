@@ -7,7 +7,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 import { useAuth } from '@/app/context/AuthContext';
 import { isAxiosError } from 'axios';
-import { ArrowUpRight, ArrowDownRight, Clock, CheckCircle2, XCircle } from 'lucide-react';
+import { ArrowUpRight, ArrowDownRight, Clock, CheckCircle2, XCircle, ArrowLeft } from 'lucide-react';
+import Link from 'next/link';
 
 // Định nghĩa kiểu dữ liệu cho Transaction
 interface Transaction {
@@ -251,6 +252,12 @@ export default function MyWalletPage() {
     return (
         <div className="min-h-screen bg-gray-50 py-10 px-4">
             <div className="max-w-6xl mx-auto space-y-6">
+                <Link href="/instructor">
+                    <Button variant="ghost" className="mb-4 cursor-pointer">
+                    <ArrowLeft className="mr-2 h-4 w-4" />
+                    Quay lại khu vực giảng viên
+                    </Button>
+                </Link>
                 
                 {/* --- CARD 1: HIỂN THỊ SỐ DƯ --- */}
                 <div className="bg-gradient-to-r from-purple-600 to-blue-600 rounded-2xl p-8 text-white shadow-lg">
@@ -316,7 +323,7 @@ export default function MyWalletPage() {
                                                 <Button 
                                                     type="button"
                                                     onClick={handleSaveBankAccount}
-                                                    className="flex-1 bg-green-600 hover:bg-green-700"
+                                                    className="flex-1 bg-green-600 hover:bg-green-700 cursor-pointer"
                                                 >
                                                     Lưu
                                                 </Button>
@@ -324,7 +331,7 @@ export default function MyWalletPage() {
                                                     type="button"
                                                     variant="outline"
                                                     onClick={() => setIsEditingBank(false)}
-                                                    className="flex-1"
+                                                    className="flex-1 cursor-pointer"
                                                 >
                                                     Hủy
                                                 </Button>
@@ -342,7 +349,7 @@ export default function MyWalletPage() {
                                                         type="button"
                                                         variant="link"
                                                         onClick={() => setIsEditingBank(true)}
-                                                        className="text-purple-600 p-0 h-auto mt-2"
+                                                        className="text-purple-600 p-0 h-auto mt-2 cursor-pointer"
                                                     >
                                                         Chỉnh sửa thông tin
                                                     </Button>
@@ -354,7 +361,7 @@ export default function MyWalletPage() {
                                                         type="button"
                                                         variant="outline"
                                                         onClick={() => setIsEditingBank(true)}
-                                                        className="text-purple-600 border-purple-600"
+                                                        className="text-purple-600 border-purple-600 cursor-pointer"
                                                     >
                                                         + Thêm thông tin ngân hàng
                                                     </Button>
@@ -367,7 +374,7 @@ export default function MyWalletPage() {
                                 <Button 
                                     type="submit" 
                                     disabled={isWithdrawing}
-                                    className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-4 rounded-lg text-lg transition-all"
+                                    className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-4 rounded-lg text-lg transition-all cursor-pointer"
                                 >
                                     {isWithdrawing ? 'Đang xử lý...' : 'Xác nhận rút tiền'}
                                 </Button>
