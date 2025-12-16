@@ -75,7 +75,27 @@ export default function InstructorDashboard() {
         ]);
 
         setStats(overviewRes.data.data);
-        setRevenueData(revenueRes.data.data);
+
+        // Xử lý revenueData để luôn đủ 12 tháng gần nhất
+        const rawRevenue: RevenueData[] = revenueRes.data.data || [];
+        console.log('Raw Revenue Data:', rawRevenue);
+        const months: Record<string, number> = {};
+        for (let i = 11; i >= 0; i--) {
+          const d = new Date();
+          d.setMonth(d.getMonth() - i);
+          const key = `${d.getMonth() + 1}/${d.getFullYear()}`;
+          months[key] = 0;
+        }
+        rawRevenue.forEach((item) => {
+          const monthFromApi = item.name.replace('T', ''); 
+          const matchingKey = Object.keys(months).find(key => key.startsWith(`${monthFromApi}/`));
+          if (matchingKey) {
+            months[matchingKey] += item.total;
+          }
+        });
+        const fullRevenueData: RevenueData[] = Object.entries(months).map(([name, total]) => ({ name, total }));
+        setRevenueData(fullRevenueData);
+
         setRecentEnrollments(enrollmentsRes.data.data);
       } catch (error) {
         console.error('Error fetching instructor stats:', error);
