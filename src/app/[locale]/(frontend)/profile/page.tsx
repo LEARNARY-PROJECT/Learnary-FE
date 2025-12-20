@@ -6,7 +6,7 @@ import { useAuth } from "@/app/context/AuthContext";
 import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import api from "@/app/lib/axios";
-// import type { AxiosError } from 'axios';
+import type { AxiosError } from 'axios';
 import Image from "next/image";
 import {
   Breadcrumb,
@@ -300,20 +300,52 @@ export default function ProfilePage() {
       toast.error("Mật khẩu mới và mật khẩu xác nhận không trùng khớp")
       return
     }
+    if (newPassword === oldPassword) {
+      toast.info("Mật khẩu cũ và mới phải khác nhau!")
+      return;
+    }
+    if (newPassword.length < 6) {
+      toast.info("Mật khẩu phải từ 6 ký tự trở lên")
+      return;
+    }
     try {
       setIsSubmittingPassword(true);
-      await api.put('/auth/changePassword', {
+      const res = await api.put('/auth/changePassword', {
         oldPassword,
         newPassword
       })
-      toast.success("Đổi mật khẩu thành công!");
-      setIsChangingPassword(false)
-      setOldPassword("")
-      setNewPassword("")
-      setConfirmPassword("")
+      if (res.data) {
+        toast.success("Đổi mật khẩu thành công!");
+        setIsChangingPassword(false)
+        setOldPassword("")
+        setNewPassword("")
+        setConfirmPassword("")
+      }
     } catch (error) {
       console.log(error)
-      toast.error("Có lỗi khi đổi mật khẩu, vui lòng thử lại!")
+      if(error && typeof error === 'object' && 'response' in error) {
+        const axiosError = error as AxiosError<{ message?: string; error?: string }>;
+        const errorMessage = axiosError.response?.data?.message || axiosError.response?.data?.error;
+        const statusCode = axiosError.response?.status;
+        
+        if (statusCode === 401) {
+          toast.error("Mật khẩu cũ không chính xác!");
+        } else if (errorMessage?.includes("New password must be more than 6 characters")) {
+          toast.warning("Mật khẩu mới phải có ít nhất 6 ký tự!");
+        } else if (errorMessage?.includes("New password cannot be the same as old password")) {
+          toast.warning("Mật khẩu mới không được trùng với mật khẩu cũ!");
+        } else if (errorMessage?.includes("Missing field required")) {
+          toast.warning("Vui lòng điền đầy đủ thông tin!");
+        } else if (errorMessage?.includes("Cannot find user")) {
+          toast.error("Không tìm thấy người dùng!");
+        } else if (errorMessage?.includes("Cannot find old password")) {
+          toast.error("Không tìm thấy mật khẩu cũ!");
+        } else {
+          toast.warning("Có lỗi khi đổi mật khẩu, vui lòng thử lại!");
+        }
+      } else {
+        toast.error("Có lỗi khi đổi mật khẩu, vui lòng thử lại!");
+      }
     } finally {
       setIsSubmittingPassword(false)
     }
@@ -378,7 +410,7 @@ export default function ProfilePage() {
                             <EnvelopeIcon className="w-5 h-5" />
                             <span className="font-roboto text-sm">{userInfo.email}</span>
                           </div>
-                          
+
                           {(userInfo.city || userInfo.nation) && (
                             <div className="flex items-center gap-2">
                               <MapPinIcon className="w-5 h-5" />
@@ -387,7 +419,7 @@ export default function ProfilePage() {
                               </span>
                             </div>
                           )}
-                          
+
                           <div className="flex items-center gap-2">
                             <CalendarIcon className="w-5 h-5" />
                             <span className="font-roboto text-sm">
@@ -426,40 +458,40 @@ export default function ProfilePage() {
                           <div>
                             <Label className="text-gray-400 text-sm mb-1">Họ và tên</Label>
                             {isEditing ? (
-                              <Input 
-                                value={formData.fullName} 
-                                onChange={(e) => handleInputChange('fullName', e.target.value)} 
-                                className={errors.fullName ? 'border-red-500' : ''} 
+                              <Input
+                                value={formData.fullName}
+                                onChange={(e) => handleInputChange('fullName', e.target.value)}
+                                className={errors.fullName ? 'border-red-500' : ''}
                               />
                             ) : (
                               <p className="font-bold text-gray-800">{userInfo.fullName}</p>
                             )}
                           </div>
-                          
+
                           <div>
                             <Label className="text-gray-400 text-sm mb-1">Email</Label>
                             <p className="font-bold text-gray-800">{userInfo.email}</p>
                           </div>
-                          
+
                           <div>
                             <Label className="text-gray-400 text-sm mb-1">Số điện thoại</Label>
                             {isEditing ? (
-                              <Input 
-                                value={formData.phone} 
-                                onChange={(e) => handleInputChange('phone', e.target.value)} 
+                              <Input
+                                value={formData.phone}
+                                onChange={(e) => handleInputChange('phone', e.target.value)}
                               />
                             ) : (
                               <p className="font-bold text-gray-800">{userInfo.phone || 'Chưa cập nhật'}</p>
                             )}
                           </div>
-                          
+
                           <div>
                             <Label className="text-gray-400 text-sm mb-1">Ngày sinh</Label>
                             {isEditing ? (
-                              <Input 
-                                type="date" 
-                                value={formData.dateOfBirth ? new Date(formData.dateOfBirth).toISOString().split('T')[0] : ""} 
-                                onChange={(e) => handleInputChange('dateOfBirth', e.target.value ? new Date(e.target.value) : undefined)} 
+                              <Input
+                                type="date"
+                                value={formData.dateOfBirth ? new Date(formData.dateOfBirth).toISOString().split('T')[0] : ""}
+                                onChange={(e) => handleInputChange('dateOfBirth', e.target.value ? new Date(e.target.value) : undefined)}
                               />
                             ) : (
                               <p className="font-bold text-gray-800">
@@ -467,25 +499,25 @@ export default function ProfilePage() {
                               </p>
                             )}
                           </div>
-                          
+
                           <div>
                             <Label className="text-gray-400 text-sm mb-1">Địa chỉ</Label>
                             {isEditing ? (
-                              <Input 
-                                value={formData.address} 
-                                onChange={(e) => handleInputChange('address', e.target.value)} 
+                              <Input
+                                value={formData.address}
+                                onChange={(e) => handleInputChange('address', e.target.value)}
                               />
                             ) : (
                               <p className="font-bold text-gray-800">{userInfo.address || 'Chưa cập nhật'}</p>
                             )}
                           </div>
-                          
+
                           <div className={isMobile ? '' : 'col-span-2'}>
                             <Label className="text-gray-400 text-sm mb-1">Tiểu sử</Label>
                             {isEditing ? (
-                              <Textarea 
-                                value={formData.bio} 
-                                onChange={(e) => handleInputChange('bio', e.target.value)} 
+                              <Textarea
+                                value={formData.bio}
+                                onChange={(e) => handleInputChange('bio', e.target.value)}
                               />
                             ) : (
                               <p className="text-gray-800">{userInfo.bio || "Chưa cập nhật"}</p>
@@ -534,29 +566,29 @@ export default function ProfilePage() {
                                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
                                       <Label>Tên ngân hàng</Label>
-                                      <Input 
-                                        value={instructorFormData.bank_name} 
-                                        onChange={(e) => setInstructorFormData({ ...instructorFormData, bank_name: e.target.value })} 
-                                        className="bg-white mt-1" 
-                                        placeholder="VD: Vietcombank" 
+                                      <Input
+                                        value={instructorFormData.bank_name}
+                                        onChange={(e) => setInstructorFormData({ ...instructorFormData, bank_name: e.target.value })}
+                                        className="bg-white mt-1"
+                                        placeholder="VD: Vietcombank"
                                       />
                                     </div>
-                                    
+
                                     <div>
                                       <Label>Số tài khoản</Label>
-                                      <Input 
-                                        value={instructorFormData.account_number} 
-                                        onChange={(e) => setInstructorFormData({ ...instructorFormData, account_number: e.target.value })} 
-                                        className="bg-white mt-1" 
+                                      <Input
+                                        value={instructorFormData.account_number}
+                                        onChange={(e) => setInstructorFormData({ ...instructorFormData, account_number: e.target.value })}
+                                        className="bg-white mt-1"
                                       />
                                     </div>
-                                    
+
                                     <div className="md:col-span-2">
                                       <Label>Chủ tài khoản</Label>
-                                      <Input 
-                                        value={instructorFormData.account_holder_name} 
-                                        onChange={(e) => setInstructorFormData({ ...instructorFormData, account_holder_name: e.target.value })} 
-                                        className="bg-white mt-1" 
+                                      <Input
+                                        value={instructorFormData.account_holder_name}
+                                        onChange={(e) => setInstructorFormData({ ...instructorFormData, account_holder_name: e.target.value })}
+                                        className="bg-white mt-1"
                                       />
                                     </div>
                                   </div>
@@ -576,17 +608,17 @@ export default function ProfilePage() {
                                       <Label className="text-gray-400 text-xs">Họ và tên</Label>
                                       <p className="text-sm font-semibold mt-1">{userInfo.fullName}</p>
                                     </div>
-                                    
+
                                     <div>
                                       <Label className="text-gray-400 text-xs">Email</Label>
                                       <p className="text-sm font-semibold mt-1">{userInfo.email}</p>
                                     </div>
-                                    
+
                                     <div>
                                       <Label className="text-gray-400 text-xs">SĐT</Label>
                                       <p className="text-sm mt-1">{userInfo.phone || "N/A"}</p>
                                     </div>
-                                    
+
                                     <div>
                                       <Label className="text-gray-400 text-xs">Địa chỉ</Label>
                                       <p className="text-sm mt-1">{userInfo.address || "N/A"}</p>
@@ -603,12 +635,12 @@ export default function ProfilePage() {
                                       <Label className="text-gray-400 text-xs">Tên ngân hàng</Label>
                                       <p className="text-sm font-semibold mt-1">{instructorFormData.bank_name || "Chưa cập nhật"}</p>
                                     </div>
-                                    
+
                                     <div>
                                       <Label className="text-gray-400 text-xs">Số tài khoản</Label>
                                       <p className="text-sm font-semibold mt-1">{instructorFormData.account_number || "Chưa cập nhật"}</p>
                                     </div>
-                                    
+
                                     <div>
                                       <Label className="text-gray-400 text-xs">Chủ tài khoản</Label>
                                       <p className="text-sm font-semibold mt-1">{instructorFormData.account_holder_name || "Chưa cập nhật"}</p>
@@ -628,7 +660,7 @@ export default function ProfilePage() {
                                       )}
                                     </div>
                                   </div>
-                                  
+
                                   <div className="p-4 border rounded-lg shadow-sm">
                                     <Label className="text-gray-400 text-sm mb-1">Trạng thái</Label>
                                     <p className={`font-bold mt-1 ${instructorInfo?.status === 'Active' ? 'text-green-600' : 'text-red-500'}`}>
