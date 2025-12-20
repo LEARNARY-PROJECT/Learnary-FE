@@ -29,6 +29,7 @@ import {
   MoreHorizontal,
   Mail,
   Phone,
+  RefreshCcw,
   Clock
 } from "lucide-react";
 
@@ -146,7 +147,9 @@ export default function InstructorManagement() {
       setIsLoading(false);
     }
   };
-
+  const reload = async (): Promise<void> => {
+    fetchData();
+  }
   const handleToggleActive = async (userId: string, currentStatus: boolean) => {
     try {
       await api.patch(`/users/${userId}`, { isActive: !currentStatus });
@@ -226,13 +229,13 @@ export default function InstructorManagement() {
           >
             Khác / Chờ duyệt
           </Button>
-          {/* <Button
+          <Button
             variant={"outline"}
-            onClick={()=> fetchInstructors()}
-            className='cursor-pointer hover:bg-gray-300'
+            onClick={reload}
+            className="cursor-pointer hover:bg-gray-300"
           >
-            <RefreshCcw></RefreshCcw> Reload
-          </Button> */}
+            <RefreshCcw /> Reload
+          </Button>
         </div>
       </div>
 

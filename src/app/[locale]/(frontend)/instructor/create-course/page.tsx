@@ -73,7 +73,7 @@
     const handleSubmit = async (e: React.FormEvent) => {
       e.preventDefault();
       if (!formData.title.trim() || !formData.category_id || !formData.level_id || !formData.first_chapter_name.trim()) {
-        setError('Vui lòng điền đủ các trường bắt buộc (*)'); return;
+        setError('Vui lòng điền đủ thông tin bắt buộc (*)'); return;
       }
       setIsLoading(true);
       

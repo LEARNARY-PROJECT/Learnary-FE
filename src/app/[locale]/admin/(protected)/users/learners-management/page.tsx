@@ -30,6 +30,7 @@ import {
   BookOpen,
   Calendar,
   UserCheck,
+  RefreshCcw,
   UserX
 } from "lucide-react";
 import { toast } from "sonner";
@@ -101,7 +102,9 @@ export default function LearnerManagement() {
       setIsLoading(false);
     }
   };
-
+  const reload = async (): Promise<void> => {
+    fetchLearners();
+  }
   const handleToggleActive = async (userId: string, currentStatus: boolean) => {
     try {
       await api.patch(`/users/${userId}`, { isActive: !currentStatus });
@@ -185,6 +188,13 @@ export default function LearnerManagement() {
             >
                 Đã khóa
             </Button>
+            <Button
+                variant={"outline"}
+                onClick={reload}
+                className="cursor-pointer hover:bg-gray-300"
+              >
+                <RefreshCcw /> Reload
+              </Button>
         </div>
       </div>
 
