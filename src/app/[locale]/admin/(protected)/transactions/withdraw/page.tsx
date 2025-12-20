@@ -167,12 +167,14 @@ export default function WithdrawApprovalPage() {
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={5} className="text-center h-32 text-gray-500 flex flex-col items-center justify-center">
-                  <CheckCircle className="w-10 h-10 text-green-300 mb-2" />
-                  <p>Tuyệt vời! Không có yêu cầu nào đang chờ.</p>
+                <TableCell colSpan={5} style={{ padding: 0, border: 'none' }}>
+                  <div className="flex flex-col items-center justify-center h-40 w-full">
+                    <CheckCircle className="w-10 h-10 text-green-300 mb-2" />
+                    <p className="text-gray-500">Tuyệt vời! Không có yêu cầu nào đang chờ.</p>
+                  </div>
                 </TableCell>
               </TableRow>
-            )}
+            )}  
           </TableBody>
         </Table>
       </div>

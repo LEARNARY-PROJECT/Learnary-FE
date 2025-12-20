@@ -7,7 +7,7 @@ import SingleCourseCard from "./SingleCourseCard";
 import ComboCourse from "./ComboCourse";
 import CourseSearchBar from "./CourseSearchBar";
 import CourseFilters from "./CourseFilters";
-import { useIsMobile } from "@/hooks/useIsMobile";
+// import { useIsMobile } from "@/hooks/useIsMobile";
 import { Button } from "@/components/ui/button";
 
 interface CoursesByCategory {
@@ -107,7 +107,10 @@ const CourseListWithFilters: React.FC = () => {
   const [selectedLevel, setSelectedLevel] = useState("all");
   const [displayType, setDisplayType] = useState<DisplayType>("all");
   const [isLoading, setIsLoading] = useState(true);
-  const isMobile = useIsMobile();
+  // const isMobile = useIsMobile();
+  // Track expanded categories and combos
+  const [expandedCategories, setExpandedCategories] = useState<{ [key: string]: boolean }>({});
+  const [combosExpanded, setCombosExpanded] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -196,7 +199,7 @@ const CourseListWithFilters: React.FC = () => {
   // Group courses by category
   const coursesByCategory = useMemo(() => {
     const grouped: CoursesByCategory[] = [];
-    
+
     // If no categories available, show all courses in one group
     if (categories.length === 0 && filteredCourses.length > 0) {
       grouped.push({
@@ -205,7 +208,7 @@ const CourseListWithFilters: React.FC = () => {
       });
       return grouped;
     }
-    
+
     // If category filter is applied, only show that category
     if (selectedCategory !== "all") {
       const category = categories.find((cat) => cat.category_id === selectedCategory);
@@ -327,28 +330,38 @@ const CourseListWithFilters: React.FC = () => {
             ) : null
           ) : (
             <div className="space-y-12">
-              {coursesByCategory.map((group) => (
-                <div key={group.category.category_id}>
-                  <h2 className="text-2xl font-roboto-condensed-bold mb-6 border-b-2 border-pink-600 pb-2 inline-block">
-                    {group.category.category_name}
-                  </h2>
-                  {isMobile ? (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 justify-items-center">
-                      {group.courses.map((course) => (
-                        <SingleCourseCard key={course.course_id} course={course} />
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="flex flex-wrap gap-4">
-                      {group.courses.map((course) => (
+              {coursesByCategory.map((group) => {
+                const isExpanded = expandedCategories[group.category.category_id];
+                const showCourses = isExpanded ? group.courses : group.courses.slice(0, 4);
+                return (
+                  <div key={group.category.category_id}>
+                    <h2 className="text-2xl font-roboto-condensed-bold mb-6 border-b-2 border-pink-600 pb-2 inline-block">
+                      {group.category.category_name}
+                    </h2>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                      {showCourses.map((course) => (
                         <div key={course.course_id} className="w-full sm:w-1/2 lg:w-1/4">
                           <SingleCourseCard course={course} />
                         </div>
                       ))}
                     </div>
-                  )}
-                </div>
-              ))}
+                    {group.courses.length > 4 && (
+                      <div className="flex justify-center mt-4">
+                        <Button
+                          variant="outline"
+                          className="border-pink-600 text-pink-600 hover:bg-pink-50"
+                          onClick={() => setExpandedCategories((prev) => ({
+                            ...prev,
+                            [group.category.category_id]: !isExpanded,
+                          }))}
+                        >
+                          {isExpanded ? "Ẩn bớt" : "Xem thêm"}
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           )}
         </>
@@ -370,19 +383,22 @@ const CourseListWithFilters: React.FC = () => {
                   Combo khóa học
                 </h2>
               )}
-              {isMobile ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 justify-items-center">
-                  {filteredCombos.map((combo) => (
-                    <ComboCourse key={combo.group_id} combo={combo} />
-                  ))}
-                </div>
-              ) : (
-                <div className="flex flex-wrap gap-4">
-                  {filteredCombos.map((combo) => (
-                    <div key={combo.group_id} className="w-full sm:w-1/2 lg:w-1/4">
-                      <ComboCourse combo={combo} />
-                    </div>
-                  ))}
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                {(combosExpanded ? filteredCombos : filteredCombos.slice(0, 4)).map((combo) => (
+                  <div key={combo.group_id} className="w-full sm:w-1/2 lg:w-1/4">
+                    <ComboCourse combo={combo} />
+                  </div>
+                ))}
+              </div>
+              {filteredCombos.length > 4 && (
+                <div className="flex justify-center mt-4">
+                  <Button
+                    variant="outline"
+                    className="border-pink-600 text-pink-600 hover:bg-pink-50"
+                    onClick={() => setCombosExpanded((prev) => !prev)}
+                  >
+                    {combosExpanded ? "Ẩn bớt" : "Xem thêm"}
+                  </Button>
                 </div>
               )}
             </>
