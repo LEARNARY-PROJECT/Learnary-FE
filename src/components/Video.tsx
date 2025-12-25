@@ -1,5 +1,5 @@
 import { useIsMobile } from '@/hooks/useIsMobile'
-import React, { useEffect, useRef, useState,useCallback } from 'react'
+import React, { useEffect, useRef, useState, useCallback } from 'react'
 import "plyr/dist/plyr.css";
 import { toast } from 'sonner';
 import api from '@/app/lib/axios';
@@ -7,6 +7,7 @@ import api from '@/app/lib/axios';
 interface VideoProps {
     video_url: string;
     lesson_id?: string;
+    is_completed?: boolean;
     onCompleted?: () => void;
 }
 
@@ -14,6 +15,7 @@ const Video: React.FC<VideoProps> = ({
     video_url,
     lesson_id,
     onCompleted,
+    is_completed,
 }) => {
     const isMobile = useIsMobile();
     const playerRef = useRef<Plyr | null>(null);
@@ -57,7 +59,7 @@ const Video: React.FC<VideoProps> = ({
         } catch (error) {
             console.error('Failed to save watch time:', error);
         }
-    },[lesson_id]);
+    }, [lesson_id]);
 
     useEffect(() => {
         if (!progressLoaded) {
@@ -239,17 +241,20 @@ const Video: React.FC<VideoProps> = ({
                             maxWatchTimeRef.current = currentTime;
                         }
                     });
-                    playerRef.current.on('seeking', () => {
-                        const currentTime = playerRef.current?.currentTime || 0;
-                        const allowedMaxTime = maxWatchTimeRef.current /* + 5 */; // cho phép tua tới thêm 5 giây
-                        if (currentTime > allowedMaxTime && playerRef.current) {
-                            playerRef.current.currentTime = allowedMaxTime;
-                            toast.warning('Bạn chỉ có thể tua tới vị trí đã xem!', {
-                                duration: 2000,
-                            });
-                        }
-                    });
 
+                    if (is_completed == false) {
+                        //seeking là cấu hình cả tua tới và lùi, chi tiết hơn thì dùng rewind để quản lý tua lùi, fastFoward để quản lý tua tới
+                        playerRef.current.on('seeking', () => {
+                            const currentTime = playerRef.current?.currentTime || 0;
+                            const allowedMaxTime = maxWatchTimeRef.current /* + 5 */; // cho phép tua tới thêm 5 giây
+                            if (currentTime > allowedMaxTime && playerRef.current) {
+                                playerRef.current.currentTime = allowedMaxTime;
+                                toast.warning('Bạn chỉ có thể tua tới vị trí đã xem!', {
+                                    duration: 2000,
+                                });
+                            }
+                        });
+                    }
                 } catch {
                 }
             }
@@ -273,13 +278,13 @@ const Video: React.FC<VideoProps> = ({
                 try {
                     playerRef.current.destroy();
                 } catch {
-                    // Ignore destroy error
+
                 }
                 playerRef.current = null;
             }
             clearTimeout(timer);
         };
-    }, [video_url, onCompleted, saveWatchTime, progressLoaded, lesson_id]);
+    }, [video_url, onCompleted, saveWatchTime, progressLoaded, lesson_id, is_completed]);
 
     return (
         <div className={`${isMobile ? "h-fit" : "h-fit min-h-[500px]"} relative rounded-2xl`}>
