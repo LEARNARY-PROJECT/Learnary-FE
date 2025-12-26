@@ -310,13 +310,13 @@ const CourseListWithFilters: React.FC = () => {
             <div className="space-y-10">
               {coursesByCategory.map((group) => {
                 const isExpanded = expandedCategories[group.category.category_id];
-                const showCourses = isExpanded ? group.courses : group.courses.slice(0, 5);
+                const showCourses = isExpanded ? group.courses : group.courses.slice(0, 4);
                 return (
                   <div key={group.category.category_id}>
                     <h2 className="text-2xl font-roboto-condensed-bold mb-6 border-b-2 border-pink-600 pb-2 inline-block">
                       {group.category.category_name}
                     </h2>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                       {showCourses.map((course) => (
                         <div key={course.course_id} className={`${isMobile ? 'sm:w-1/2 lg:w-1/4' : ' sm:w-1/2 lg:w-1/4'}`}>
                           <SingleCourseCard course={course} />
@@ -360,8 +360,8 @@ const CourseListWithFilters: React.FC = () => {
                   Combo khóa học
                 </h2>
               )}
-              <div className={`${isMobile ? 'grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 justify-items-center' : 'grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 justify-items-start'}`}>
-                {(combosExpanded ? filteredCombos : filteredCombos.slice(0, 5)).map((combo) => (
+              <div className={`${isMobile ? 'grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 justify-items-center' : 'grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 justify-items-start'}`}>
+                {(combosExpanded ? filteredCombos : filteredCombos.slice(0, 4)).map((combo) => (
                   <div key={combo.group_id} className={`${isMobile ? 'flex flex-col justify-center sm:w-1/2 lg:w-1/4' : ' sm:w-1/2 lg:w-1/4'}`}>
                     <ComboCourse combo={combo} />
                   </div>

@@ -102,25 +102,25 @@ export default function EditCoursePage({ params }: { params: Promise<{ id: strin
                     });
                 }
 
-                                setCourse(courseData);
-                                setPriceDisplay(courseData.price > 0 ? formatNumberWithDots(courseData.price) : '');
-                                setVideoStaging(newVideoStaging);
-                                setCategories(catRes.data.data || catRes.data);
-                                setLevels(lvlRes.data.data || lvlRes.data);
-                                // Nếu bị từ chối quá 3 ngày thì khóa sửa
-                                if (courseData.status === 'Archived' && courseData.updatedAt) {
-                                    const updatedAt = new Date(courseData.updatedAt);
-                                    const now = new Date();
-                                    const diffMs = now.getTime() - updatedAt.getTime();
-                                    const diffDays = diffMs / (1000 * 60 * 60 * 24);
-                                    if (diffDays > 3) {
-                                        setEditLocked(true);
-                                    } else {
-                                        setEditLocked(false);
-                                    }
-                                } else {
-                                    setEditLocked(false);
-                                }
+                setCourse(courseData);
+                setPriceDisplay(courseData.price > 0 ? formatNumberWithDots(courseData.price) : '');
+                setVideoStaging(newVideoStaging);
+                setCategories(catRes.data.data || catRes.data);
+                setLevels(lvlRes.data.data || lvlRes.data);
+                // Nếu bị từ chối quá 3 ngày thì khóa sửa
+                if (courseData.status === 'Archived' && courseData.updatedAt) {
+                    const updatedAt = new Date(courseData.updatedAt);
+                    const now = new Date();
+                    const diffMs = now.getTime() - updatedAt.getTime();
+                    const diffDays = diffMs / (1000 * 60 * 60 * 24 * 3);
+                    if (diffDays > 3) {
+                        setEditLocked(true);
+                    } else {
+                        setEditLocked(false);
+                    }
+                } else {
+                    setEditLocked(false);
+                }
             } catch (err) {
                 console.error(err);
                 toast.info("Không thể tải dữ liệu. Vui lòng thử lại.");
@@ -488,10 +488,10 @@ export default function EditCoursePage({ params }: { params: Promise<{ id: strin
                             <Save className="w-4 h-4 mr-2" /> Lưu nháp
                         </Button>
                     )}
-                    <Button 
+                    <Button
                         title={!canSubmit ? 'Vui lòng điền đầy đủ thông tin và thêm video cho tất cả bài học' : 'Gửi khóa học để admin phê duyệt'}
-                        onClick={() => handleAction('submit')} 
-                        disabled={!canSubmit || isSaving} 
+                        onClick={() => handleAction('submit')}
+                        disabled={!canSubmit || isSaving}
                         className={`${!canSubmit ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'} text-blue-600 bg-white border border-blue-600 hover:bg-blue-600 hover:text-white`}
                     >
                         <Send className="w-4 h-4 mr-2" /> Gửi duyệt
@@ -513,7 +513,7 @@ export default function EditCoursePage({ params }: { params: Promise<{ id: strin
                                     <Label className='text-blue-700 font-roboto-condensed-bold'>Tiêu đề</Label>
                                     <p className='text-red-600'>*</p>
                                 </div>
-                                <Input value={course.title} onChange={(e) => updateCourseState(d => d.title = e.target.value)} disabled={course.status === 'Published'}/>
+                                <Input value={course.title} onChange={(e) => updateCourseState(d => d.title = e.target.value)} disabled={course.status === 'Published'} />
                             </div>
                             <div className="space-y-2">
                                 <div className='flex gap-1'>
@@ -624,7 +624,7 @@ export default function EditCoursePage({ params }: { params: Promise<{ id: strin
                                         value={chapter.chapter_title}
                                         onChange={(e) => updateCourseState(d => d.chapter[cIdx].chapter_title = e.target.value)}
                                         disabled={course.status === 'Published'}
-                                        
+
                                     />
                                     <div className="flex items-center gap-1">
                                         <Button variant="ghost" size="icon" className="text-slate-400 hover:text-red-500" onClick={() => handleDeleteChapter(cIdx)} disabled={course.status === 'Published'}>
