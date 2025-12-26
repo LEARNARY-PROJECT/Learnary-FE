@@ -107,7 +107,7 @@ const ComboCourse: React.FC<ComboCourseProps> = ({ combo }) => {
                   </Badge>
                 </div>
               </div>
-              <div className="flex flex-col gap-3">
+              <div className="flex flex-col gap-3 mt-5">
                 <div className="course-card-price-container flex justify-end gap-1">
                   <span className="text-sm text-gray-400 line-through font-roboto">
                     {formatPriceVND(originalPrice)}
