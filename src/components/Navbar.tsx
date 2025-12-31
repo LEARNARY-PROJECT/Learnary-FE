@@ -24,7 +24,6 @@ import {
 
 export const NavbarLinks = (userRole?: string) => {
   const t = useTranslations("Navbar");
-
   const baseLinks = [
     {
       name: t("home"),

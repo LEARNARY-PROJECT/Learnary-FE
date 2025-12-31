@@ -38,7 +38,8 @@ enum VerifyStatus {
   Active = "Active",
   Inactive = "Inactive",
   Suspended = "Suspended",
-  Pending = "Pending"
+  Pending = "Pending",
+  Reject = "Rejected"
 }
 
 // Type chung cho bảng hiển thị
@@ -78,6 +79,7 @@ type InstructorApi = {
 
 type QualificationRequestApi = {
   instructor_qualification_id?: string;
+  status?: string; 
   user?: { user_id?: string; fullName?: string; email?: string; avatar?: string | null; phone?: string | null } | null;
   instructor?: { user?: { user_id?: string; fullName?: string; email?: string; avatar?: string | null; phone?: string | null }; user_id?: string } | null;
 };
@@ -98,9 +100,8 @@ export default function InstructorManagement() {
       setIsLoading(true);
       const [instructorsRes, requestsRes] = await Promise.all([
         api.get("/instructors"),
-        api.get("/instructor-qualifications?status=Pending") // API lấy danh sách chờ duyệt
+        api.get("/instructor-qualifications") // API lấy danh sách chờ duyệt
       ]);
-
       const instructorsRaw = instructorsRes.data.data || [];
       const requestsRaw = requestsRes.data.data || [];
 
@@ -122,7 +123,11 @@ export default function InstructorManagement() {
       const instructorUserIds = new Set(instructors.map(i => i.user_id));
       
       const applicants: CombinedInstructor[] = (requestsRaw as QualificationRequestApi[])
-        .filter((req) => !instructorUserIds.has(req.instructor?.user_id || req.user?.user_id || ''))
+        .filter((req) => {
+          const status = req.status as VerifyStatus;
+          if (status === VerifyStatus.Reject) return false;
+          return !instructorUserIds.has(req.instructor?.user_id || req.user?.user_id || '');
+        })
         .map((req) => ({
           id: req.instructor_qualification_id || '',
           user_id: req.user?.user_id || req.instructor?.user?.user_id || '',
@@ -132,7 +137,7 @@ export default function InstructorManagement() {
           phone: req.user?.phone || req.instructor?.user?.phone || null,
           bio: "Đang chờ phê duyệt hồ sơ giảng viên",
           type: "APPLICANT",
-          status: VerifyStatus.Pending,
+          status: (req.status as VerifyStatus) || VerifyStatus.Pending, // Lấy status thực tế từ API
           isVerified: false,
           totalCourses: 0,
           totalStudents: 0,
@@ -164,6 +169,9 @@ export default function InstructorManagement() {
   };
 
   const filteredData = data.filter((item) => {
+    // Loại bỏ những người bị reject - chỉ hiển thị Active và Pending
+    if (item.status === VerifyStatus.Reject) return false;
+    
     const fullName = (item.fullName || "").toLowerCase();
     const email = (item.email || "").toLowerCase();
     const search = searchTerm.toLowerCase();
@@ -253,6 +261,7 @@ export default function InstructorManagement() {
           </TableHeader>
           <TableBody>
             {filteredData.map((item) => (
+
               <TableRow key={item.id}>
                 <TableCell>
                   <div className="flex items-center gap-3">

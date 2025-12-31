@@ -20,7 +20,7 @@ export default function FrontendLayout({
           {children}
         </main>
       </NavbarWrapper>
-       <Footer /> 
+    {/*    <Footer />  */}
     </div>
   );
 }
