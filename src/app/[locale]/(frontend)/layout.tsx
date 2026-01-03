@@ -3,7 +3,10 @@ import NavbarWrapper from "@/components/NavbarWrapper";
 import { useParams, usePathname, useRouter } from "next/navigation";
 import Footer from "@/components/Footer";
 import { useAuth } from "@/app/context/AuthContext";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
+import { useAccountStatus } from "@/hooks/useAccountStatus";
+import AccountStatusBanner from "@/components/AccountStatusBanner";
+import AccountLockedDialog from "@/components/AccountLockedDialog";
 
 // Layout này CHỈ áp dụng cho các trang user (FE)
 export default function FrontendLayout({
@@ -15,28 +18,34 @@ export default function FrontendLayout({
   const pathname = usePathname();
   const router = useRouter();
   const { user, isLoading } = useAuth();
+  const { accountStatus, isLoading: isLoadingAccountStatus, handleLogout } = useAccountStatus();
   const locale = params.locale as string; 
 
   // Danh sách các trang được phép truy cập khi chưa xác thực email
-  const allowedPaths = [
+  const allowedPaths = useMemo(() => [
     '/login',
     '/register', 
     '/verify-email',
     '/email-verification-required'
-  ];
+  ], []);
 
   useEffect(() => {
-    if (isLoading) return;
+    if (isLoading || isLoadingAccountStatus) return;
+    if (accountStatus?.status === 'Locked') {
+      return;
+    }
+    if (accountStatus?.status === 'Freezed') {
+      return;
+    }
     if (user && user.isActive === false) {
       const isAllowedPath = allowedPaths.some(path => pathname?.includes(path));
       if (!isAllowedPath) {
-        router.push(`/${locale}/email-verification-required`);
+        router.push(`/${locale}/`);
       }
     }
-  }, [user, isLoading, pathname, router, locale]);
+  }, [user, isLoading, isLoadingAccountStatus, accountStatus, pathname, router, locale, allowedPaths]);
 
-  // Hiển thị loading khi đang kiểm tra auth
-  if (isLoading) {
+  if (isLoading || isLoadingAccountStatus) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
@@ -46,8 +55,22 @@ export default function FrontendLayout({
 
   return (
     <div className="min-h-screen flex flex-col">
+      {accountStatus?.status === 'Locked' && (
+        <AccountLockedDialog
+          open={true}
+          reason={accountStatus.account_noted}
+          onLogout={handleLogout}
+        />
+      )}
+      
       <div className="flex-1 flex flex-col">
         <NavbarWrapper locale={locale}>
+          {accountStatus && (accountStatus.status === 'Locked' || accountStatus.status === 'Freezed') && (
+            <AccountStatusBanner 
+              status={accountStatus.status} 
+              reason={accountStatus.account_noted} 
+            />
+          )}
           <main className="flex-1">
             {children}
           </main>
