@@ -8,7 +8,6 @@ import { useAccountStatus } from "@/hooks/useAccountStatus";
 import AccountStatusBanner from "@/components/AccountStatusBanner";
 import AccountLockedDialog from "@/components/AccountLockedDialog";
 
-// Layout này CHỈ áp dụng cho các trang user (FE)
 export default function FrontendLayout({
   children,
 }: {
@@ -34,14 +33,13 @@ export default function FrontendLayout({
     if (accountStatus?.status === 'Locked') {
       return;
     }
-    if (accountStatus?.status === 'Freezed') {
-      return;
-    }
-    if (user && user.isActive === false) {
+    // Tài khoản bị Freezed (email chưa xác thực)
+    if (accountStatus?.status === 'Freezed' || (user && user.isActive === false)) {
       const isAllowedPath = allowedPaths.some(path => pathname?.includes(path));
-      if (!isAllowedPath) {
-        router.push(`/${locale}/`);
+      if (isAllowedPath) {
+        return;
       }
+      router.push(`/${locale}/email-verification-required`);
     }
   }, [user, isLoading, isLoadingAccountStatus, accountStatus, pathname, router, locale, allowedPaths]);
 
