@@ -9,6 +9,7 @@ import { useTranslations } from 'next-intl';
 import { PLACEHOLDER_THUMBNAIL } from '@/const/urls';
 import Link from 'next/link';
 import FavoriteButton from '@/components/FavoriteButton';
+import { ToasterConfirm } from '@/components/ToasterConfimer';
 
 interface CourseSidebarProps {
   thumbnail?: string | null;
@@ -105,9 +106,15 @@ export default function CourseSidebar({ thumbnail, price, includes, onBuyNow, is
                     }, 1200);
                     return;
                   }
-                  if (window.confirm('Bạn có chắc chắn muốn mua khóa học này?')) {
-                    if (onBuyNow) onBuyNow();
-                  }
+                  ToasterConfirm({
+                    title: "Xác nhận mua khóa học",
+                    description: "Bạn có chắc chắn muốn mua khóa học này?",
+                    confirmText: "Mua ngay",
+                    cancelText: "Hủy",
+                    onConfirm: () => {
+                      if (onBuyNow) onBuyNow();
+                    }
+                  });
                 }} 
                 disabled={isLoading || isPreviewMode}
               >
