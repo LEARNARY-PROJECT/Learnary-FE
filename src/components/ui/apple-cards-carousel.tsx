@@ -157,10 +157,12 @@ export const Card = ({
   card,
   index,
   layout = false,
+  disableClick = false,
 }: {
   card: Card;
   index: number;
   layout?: boolean;
+  disableClick?: boolean;
 }) => {
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -189,7 +191,9 @@ export const Card = ({
   useOutsideClick(containerRef as React.RefObject<HTMLDivElement>, () => handleClose());
 
   const handleOpen = () => {
-    setOpen(true);
+    if (!disableClick) {
+      setOpen(true);
+    }
   };
   return (
     <>
