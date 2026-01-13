@@ -2,6 +2,8 @@
 import React from 'react'
 import { useIsMobile } from "@/hooks/useIsMobile";
 import TopicCarosel from './TopicCarosel';
+import Link from 'next/link';
+
 export default function ListTopic() {
     const isMobile = useIsMobile();
     return (
@@ -17,9 +19,11 @@ export default function ListTopic() {
                         </div>
                     </div>
                     <TopicCarosel />
-                    <p className="font-roboto text-[#696969] text-right hover:underline cursor-pointer">
-                        Xem thêm chủ đề
-                    </p>
+                    <Link href="/category-list">
+                        <p className="font-roboto text-[#696969] text-right hover:underline cursor-pointer">
+                            Xem thêm chủ đề
+                        </p>
+                    </Link>
                 </div>
             )}
 
@@ -33,9 +37,11 @@ export default function ListTopic() {
                         <p className='font-roboto text-md w-[449]'>Chúng tôi đã chuẩn bị sẵn những chủ đề đúng với đam mê của bạn – chỉ chờ bạn bắt đầu hành trình của mình</p>
                     </div>
                     <TopicCarosel />
-                    <p className="font-roboto text-[#696969] text-center hover:underline cursor-pointer">
-                        Xem thêm chủ đề
-                    </p>
+                    <Link href="/category-list">
+                        <p className="font-roboto text-[#696969] text-center hover:underline cursor-pointer">
+                            Xem thêm chủ đề
+                        </p>
+                    </Link>
                 </div>
             )}
         </div>

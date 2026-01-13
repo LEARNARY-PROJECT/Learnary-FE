@@ -8,7 +8,8 @@
     "detail":"Learning Space",
     "login": "Login",
     "logout":"Logout",
-    "admin":"Admin Site"
+    "admin":"Admin Site",
+    "support":"About Us"
   },
   "Topic": {
     "category_health": "Health",

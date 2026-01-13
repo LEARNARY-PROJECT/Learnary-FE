@@ -67,6 +67,11 @@ export type Category = {
   category_id: string,
   category_name?: string,
   slug?: string,
+  description?: string,
+  courses?: Course[],
+  _count?: {
+    courses: number
+  }
 }
 
 export type Question = {

@@ -59,13 +59,6 @@ const SingleCourseCard: React.FC<SingleCourseCardProps> = ({ course }) => {
                   className={imageClass}
                 />
               </Link>
-              <div className="absolute top-2 left-2 z-10">
-                <Badge className="bg-white ">
-                  <p className="text-sm text-orange-500 font-roboto-condensed-bold">
-                    {dataCourse.category?.category_name ?? "không có thông tin loại khoá học"}
-                  </p>
-                </Badge>
-              </div>
             </div>
 
             <div className={`${isMobile ? 'gap-2' : 'flex flex-col gap-2 justify-between h-full'}`}>
