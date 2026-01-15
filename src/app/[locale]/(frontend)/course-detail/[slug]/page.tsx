@@ -31,6 +31,7 @@ export default function CourseDetailPage() {
     const [error, setError] = useState<string | null>(null);
     const [isPaying, setIsPaying] = useState(false);
     const [canLearn, setCanLearn] = useState(false);
+    
     const [qrString, setQrString] = useState<string | null>(null);
     const [showQRDialog, setShowQRDialog] = useState(false);
     const [countdown, setCountdown] = useState<number>(120); // 2 phút
@@ -41,7 +42,8 @@ export default function CourseDetailPage() {
         if (!value || isNaN(Number(value))) return '0 ₫';
         return Number(value).toLocaleString('vi-VN') + ' ₫';
     };
-    // Khi mở dialog QR, bắt đầu countdown
+    const [avgRating, setAvgRating] = useState<number>(0);
+     // Khi mở dialog QR, bắt đầu countdown
     useEffect(() => {
         if (showQRDialog && qrString) {
             setCountdown(60);
@@ -99,7 +101,15 @@ export default function CourseDetailPage() {
                 const response = await api.get(`/courses/slug/${slug}`);
                 if (response.data && response.status === 200) {
                     setCourseData(response.data);
+                    if (response.data.feedbacks && response.data.feedbacks.length > 0) {
+                        const totalRating = response.data.feedbacks.reduce((sum: number, feedback: { rating: number }) => sum + feedback.rating, 0);
+                        const average = totalRating / response.data.feedbacks.length;
+                        setAvgRating(Number(average.toFixed(1)));
+                    } else {
+                        setAvgRating(0);
+                    }
                 }
+                
                 if (isLoggedIn && user?.id) {
                     try {
                         const enrolledCourseRes = await api.get(`/learner-courses/my-courses`);
@@ -151,7 +161,7 @@ export default function CourseDetailPage() {
                 toast.error("Không nhận được mã QR");
             }
         } catch (err) {
-            console.error("Payment Error:", err);
+/*             console.error("Payment Error:", err); */
 
             if (isAxiosError(err)) {
                 const errorMessage = err.response?.data?.error
@@ -219,7 +229,7 @@ export default function CourseDetailPage() {
                 category_name={courseData.category?.category_name ?? "Không có thông tin loại khoá học"}
                 title={courseData.title ?? "Không có tiêu đề khoá học"}
                 description={courseData.description ?? "Không có mô tả khoá học"}
-          /*       rating={courseData.rating}  */
+                rating={avgRating}  
                 total_reviews={courseData.feedbacks?.length ?? 0}
                 total_students={courseData.learnerCourses?.length ?? 0}
                 created_by={courseData.instructor?.user?.fullName || "Chưa lấy được thông tin"} 

@@ -20,6 +20,23 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 
+type UserProps = {
+  user_id: string;
+  fullName: string;
+  email: string;
+  phone?: string;
+  avatar?: string;
+  dateOfBirth?: Date;
+  address?: string;
+  city?: string;
+  nation?: string;
+  bio?: string;
+  isActive: boolean;
+  role?: string;
+  createdAt?: Date;
+  last_login?: Date;
+}
+
 interface Specialization {
   specialization_id: string;
   instructor_id?: string;
@@ -92,6 +109,32 @@ export default function BecomeInstructorPage() {
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [errors, setErrors] = useState<FormErrors>({});
   const [existingQualifications, setExistingQualifications] = useState<string[]>([]);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [userInfo, setUserInfo] = useState<UserProps | null>(null);
+  const [missingFields, setMissingFields] = useState<string[]>([]);
+
+  const checkRequiredUserInfo = (userData: UserProps): string[] => {
+    const missing: string[] = [];
+    if (!userData.fullName || userData.fullName.trim().length < 2) {
+      missing.push("Họ và tên");
+    }
+    if (!userData.phone || userData.phone.trim().length === 0) {
+      missing.push("Số điện thoại");
+    }
+    if (!userData.dateOfBirth) {
+      missing.push("Ngày sinh");
+    }
+    if (!userData.address || userData.address.trim().length === 0) {
+      missing.push("Địa chỉ");
+    }
+    // if (!userData.city || userData.city.trim().length === 0) {
+    //   missing.push("Thành phố");
+    // }
+    // if (!userData.nation || userData.nation.trim().length === 0) {
+    //   missing.push("Quốc gia");
+    // }
+    return missing;
+  };
 
   useEffect(() => {
     const fetchExistingQualifications = async () => {
@@ -111,6 +154,11 @@ export default function BecomeInstructorPage() {
           const existingSpecs = qualifications.map((q: { specialization_name: string }) => q.specialization_name);
           setExistingQualifications(existingSpecs);
         }
+        const userResponse = await api.get(`/users/getMyProfile/${user.id}`);
+        const userData = userResponse.data.user || userResponse.data;
+        setUserInfo(userData);
+        const missing = checkRequiredUserInfo(userData);
+        setMissingFields(missing);
       } catch (error) {
         console.error("Lỗi khi tải bằng cấp hiện có:", error);
       } finally {
@@ -343,6 +391,13 @@ export default function BecomeInstructorPage() {
       toast.error("Bạn phải đăng nhập để đăng ký làm giảng viên!");
       return;
     }
+    if (missingFields.length > 0) {
+      toast.error("Vui lòng cập nhật đủ thông tin cá nhân trước!", {
+        description: `Còn thiếu: ${missingFields.join(", ")}`,
+        duration: 5000,
+      });
+      return;
+    }
     if (!validateForm()) {
       toast.error("Vui lòng kiểm tra lại thông tin!");
       return;
@@ -465,7 +520,19 @@ export default function BecomeInstructorPage() {
         </Alert>
       )}
 
-      <form onSubmit={handleSubmit} className={`max-w-screen mx-auto ${isMobile ? 'space-y-4' : 'space-y-6'} ${!user || hasPendingQualification ? 'opacity-60 pointer-events-none' : ''}`}>
+      {user && missingFields.length > 0 && (
+        <Alert className="max-w-screen mx-auto mb-6 border-amber-500 bg-amber-50">
+          <AlertCircle className="h-4 w-4 text-amber-600" />
+          <AlertDescription className="font-roboto text-amber-900">
+            <strong>Thông tin cá nhân chưa đầy đủ!</strong> Vui lòng cập nhật đầy đủ thông tin trong <Link href="/profile" className="underline font-bold hover:text-amber-700">trang cá nhân</Link> trước khi đăng ký giảng viên.
+            <div className="mt-2 text-sm">
+              <strong>Còn thiếu:</strong> {missingFields.join(", ")}
+            </div>
+          </AlertDescription>
+        </Alert>
+      )}
+
+      <form onSubmit={handleSubmit} className={`max-w-screen mx-auto ${isMobile ? 'space-y-4' : 'space-y-6'} ${!user || hasPendingQualification || missingFields.length > 0 ? 'opacity-60 pointer-events-none' : ''}`}>
         <Card className="border-2 border-gray-200 shadow-lg hover:shadow-xl transition-shadow">
           <CardHeader className="flex flex-col h-fit p-5 bg-linear-to-r from-purple-100 to-blue-100">
             <div className="flex items-center gap-3">
@@ -716,11 +783,13 @@ export default function BecomeInstructorPage() {
         <div className="flex justify-center pt-4">
           <Button
             type="submit"
-            disabled={!user || isSubmitting || hasPendingQualification}
-            className={`bg-linear-to-r from-purple-600 cursor-pointer to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-roboto-bold ${isMobile ? 'w-full' : 'w-auto px-12'} py-6 text-lg shadow-lg ${!user || hasPendingQualification ? 'opacity-50 cursor-not-allowed' : ''}`}
+            disabled={!user || isSubmitting || hasPendingQualification || missingFields.length > 0}
+            className={`bg-linear-to-r from-purple-600 cursor-pointer to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-roboto-bold ${isMobile ? 'w-full' : 'w-auto px-12'} py-6 text-lg shadow-lg ${!user || hasPendingQualification || missingFields.length > 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
           >
             {!user ? (
               "Vui lòng đăng nhập"
+            ) : missingFields.length > 0 ? (
+              "Cập nhật thông tin cá nhân trước"
             ) : isSubmitting ? (
               <div className="flex items-center">
                 <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>

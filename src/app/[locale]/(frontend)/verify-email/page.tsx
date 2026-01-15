@@ -8,7 +8,7 @@ import React, { useCallback, useEffect, useState, useRef } from 'react';
 import { REGEXP_ONLY_DIGITS } from "input-otp"
 import { toast } from "sonner";
 import api from "@/app/lib/axios";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/app/context/AuthContext";
@@ -20,7 +20,9 @@ export default function VerifyEmailPage() {
     const [canResend, setCanResend] = useState(false)
     const hasSentOTP = useRef(false)
     const router = useRouter();
-    const { user } = useAuth();
+    const params = useParams();
+    const locale = params.locale as string || 'vi';
+    const { user, refreshUser } = useAuth();
     const userId = user?.id;
     
     useEffect(() => {
@@ -29,7 +31,7 @@ export default function VerifyEmailPage() {
             try {
                 hasSentOTP.current = true; 
                 await api.post(`/account-securities/resend-otp/${userId}`);
-                toast.success("Đăng ký thành công, vui lòng xác thực email, chúng tôi đã gửi 1 OTP đến email của bạn.");
+                toast.success("Vui lòng kiểm tra hòm thư của bạn, chúng tôi đã gửi 1 OTP đến email của bạn.");
             } catch {
                 toast.error( "Lỗi khi gửi mã xác thực");
                 hasSentOTP.current = false;
@@ -42,7 +44,7 @@ export default function VerifyEmailPage() {
         if (otp.length !== 6) return;
         if (!userId) {
             toast.error("Vui lòng đăng nhập trước khi xác thực email");
-            router.push('/login');
+            router.push(`/${locale}/login`);
             return;
         }
         setIsLoading(true)
@@ -52,8 +54,9 @@ export default function VerifyEmailPage() {
             })
             if (res.data.success) { 
                 toast.success("Xác thực email thành công!")
+                await refreshUser();
                 setTimeout(() => {
-                    router.push('/login')
+                    router.push(`/${locale}/profile`)
                 }, 1500)
             }
         } catch {
@@ -62,7 +65,7 @@ export default function VerifyEmailPage() {
         } finally {
             setIsLoading(false)
         }
-    }, [otp, userId, router])
+    }, [otp, userId, router, locale, refreshUser])
 
     useEffect(() => {
         if (countDown > 0) {

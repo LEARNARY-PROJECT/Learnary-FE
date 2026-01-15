@@ -15,7 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, } from '
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger, } from "@/components/ui/accordion";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
-import { Loader2, ChevronLeft, Save, Send, PlusCircle, Trash2, GripVertical, Video, FileQuestion, Plus, X, Pencil, LayoutList, Download, Upload, FileSpreadsheet } from 'lucide-react';
+import { Loader2, ChevronLeft, Save, Send, PlusCircle, Trash2, GripVertical, Video, FileQuestion, Plus, X, Pencil, LayoutList, Download, Upload, FileSpreadsheet, HelpCircle } from 'lucide-react';
 import { VideoUploadDialog } from '@/components/VideoUploadDialog';
 import { useAuth } from '@/app/context/AuthContext';
 import { formatNumberWithDots, parseNumberFromDots } from '@/utils/convert_price';
@@ -482,6 +482,41 @@ export default function EditCoursePage({ params }: { params: Promise<{ id: strin
                     </div>
                 </div>
                 <div className="flex gap-2">
+                    <Dialog>
+                        <DialogTrigger asChild>
+                            <Button 
+                                variant="outline" 
+                                size="icon"
+                                className='cursor-pointer hover:bg-red-50 border-red-500 text-red-500'
+                                title="Có thắc mắc về việc kiểm duyệt khóa học của Learnary?"
+                            >
+                                <HelpCircle className="w-5 h-5" />
+                            </Button>
+                        </DialogTrigger>
+                        <DialogContent className="max-w-md">
+                            <DialogHeader>
+                                <DialogTitle className="text-red-600">Hỗ trợ kiểm duyệt khóa học</DialogTitle>
+                            </DialogHeader>
+                            <div className="py-4">
+                                <p className="text-gray-700 leading-relaxed">
+                                    Nếu bạn cảm thấy không hài lòng với quyết định kiểm duyệt của Learnary, bạn có thể liên hệ với chúng tôi qua email sau:
+                                </p>
+                                <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-md">
+                                    <a 
+                                        href="mailto:hotrogiangvien-learnary@gmail.com" 
+                                        className="text-red-600 font-semibold hover:underline break-all"
+                                    >
+                                        hotrogiangvien-learnary@gmail.com
+                                    </a>
+                                </div>
+                            </div>
+                            <DialogFooter>
+                                <DialogClose asChild>
+                                    <Button variant="outline">Đóng</Button>
+                                </DialogClose>
+                            </DialogFooter>
+                        </DialogContent>
+                    </Dialog>
                     <Link href="/instructor/my-courses">
                         <Button variant="outline" className='cursor-pointer hover:bg-gray-200'>
                             <LayoutList className="w-4 h-4 mr-2" /> Khoá học của tôi

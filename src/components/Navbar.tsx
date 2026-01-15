@@ -21,6 +21,14 @@ import {
   MessageCircle,
 } from "lucide-react";
 import { useAccountStatus } from "@/hooks/useAccountStatus";
+import {
+  NavigationMenu,
+  NavigationMenuContent,
+  NavigationMenuItem,
+  NavigationMenuLink,
+  NavigationMenuList,
+  NavigationMenuTrigger,
+} from "@/components/ui/navigation-menu";
 
 export const NavbarLinks = (userRole?: string, accountStatus?: string, isActive?:boolean) => {
   const t = useTranslations("Navbar");
@@ -45,7 +53,7 @@ export const NavbarLinks = (userRole?: string, accountStatus?: string, isActive?
   const adminLink = userRole === "ADMIN" ? [
     {
       name: t("admin"),
-      href: "/admin-side"
+      href: "/admin/dashboard"
     }
   ] : [];
   const becomeLecturerLink = (!userRole || (userRole !== "INSTRUCTOR" && userRole !== "ADMIN")) && accountStatus !=="Freezed" ? [
@@ -65,6 +73,25 @@ function Navbar() {
   const { accountStatus } = useAccountStatus();
   const links = NavbarLinks(user?.role, accountStatus?.status, user?.isActive);
   const t = useTranslations("Navbar");
+  
+  const aboutUsLinks = [
+    {
+      name: "Learnary là gì?",
+      href: "/about-us",
+      description: "Tìm hiểu về nền tảng Learnary"
+    },
+    {
+      name: "Điều khoản và chính sách",
+      href: "/about-us/terms-and-policies",
+      description: "Điều khoản sử dụng và chính sách bảo mật"
+    },
+    {
+      name: "Hướng dẫn",
+      href: "/about-us/guide",
+      description: "Hướng dẫn sử dụng nền tảng"
+    }
+  ];
+  
   async function handleLogout(): Promise<void> {
     try {
       await logout()
@@ -158,18 +185,48 @@ function Navbar() {
         </div>
         {!isMobile && (
           <>
-            <ul className="flex space-x-1 text-md ">
-              {links.map((link) => (
-                <li key={link.name}>
-                  <Link
-                    href={link.href}
-                    className="font-ruda transition-all hover:font-ruda-bold hover:text-lg hover:bg-gray-200 rounded-full px-4 py-4"
-                  >
-                    {link.name}
-                  </Link>
-                </li>
-              ))}
-            </ul>
+            <div className="flex items-center space-x-1">
+              <ul className="flex space-x-1 text-md">
+                {links.map((link) => (
+                  <li key={link.name}>
+                    <Link
+                      href={link.href}
+                      className="font-ruda transition-all hover:font-ruda-bold hover:text-lg hover:bg-gray-200 rounded-full px-4 py-4"
+                    >
+                      {link.name}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+
+              <NavigationMenu>
+                <NavigationMenuList>
+                  <NavigationMenuItem>
+                    <NavigationMenuTrigger className="font-ruda text-md hover:font-ruda-bold hover:text-lg cursor-pointer ">
+                      Về chúng tôi
+                    </NavigationMenuTrigger>
+                    <NavigationMenuContent>
+                      <ul className="grid w-[400px] gap-3 p-4">
+                        {aboutUsLinks.map((item) => (
+                          <li key={item.name}>
+                            <NavigationMenuLink asChild>
+                              <Link
+                                href={item.href}
+                                className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground">
+                                <div className="text-sm font-medium leading-none font-roboto-bold">{item.name}</div>
+                                <p className="line-clamp-2 text-sm leading-snug text-muted-foreground font-roboto-condensed">
+                                  {item.description}
+                                </p>
+                              </Link>
+                            </NavigationMenuLink>
+                          </li>
+                        ))}
+                      </ul>
+                    </NavigationMenuContent>
+                  </NavigationMenuItem>
+                </NavigationMenuList>
+              </NavigationMenu>
+            </div>
 
             <div className="flex items-center space-x-6">
               {renderAuthLinks()}
@@ -209,6 +266,23 @@ function Navbar() {
                 </Link>
               </li>
             ))}
+            
+            <li className="border-t pt-2">
+              <div className="font-medium mb-2">Về chúng tôi</div>
+              <ul className="pl-4 space-y-2">
+                {aboutUsLinks.map((item) => (
+                  <li key={item.name}>
+                    <Link
+                      href={item.href}
+                      className="block text-sm hover:text-gray-500 transition-colors"
+                      onClick={() => setIsOpen(false)}
+                    >
+                      {item.name}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </li>
           </ul>
 
           <div className="flex items-center space-x-6">

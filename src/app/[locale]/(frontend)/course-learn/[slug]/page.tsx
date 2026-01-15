@@ -37,6 +37,7 @@ const CourseDetailPage = () => {
   const [lessonProgress, setLessonProgress] = useState<LessonProgressMap>({});
   const [canLearn, setCanLearn] = useState(false);
   const [isCheckingAccess, setIsCheckingAccess] = useState(true);
+
   const verifiedLearnerCourse = useCallback(async () => {
     try {
       setIsCheckingAccess(true);
@@ -126,8 +127,7 @@ const CourseDetailPage = () => {
       await api.post('/lesson-progress/complete', {
         lesson_id: lessonId
       });
-      setLessonProgress(prev => ({
-        ...prev,
+      setLessonProgress(prev => ({...prev,
         [lessonId]: {
           is_completed: true,
           completed_at: new Date().toISOString()

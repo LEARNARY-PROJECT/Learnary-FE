@@ -26,6 +26,7 @@ interface AuthContextType {
   isLoading: boolean; 
   login: (accessToken: string) => Promise<AuthUser | null>;
   logout: () => void;
+  refreshUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -113,6 +114,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return null;
     }
   }, [logout]);
+
+  const refreshUser = useCallback(async () => {
+    try {
+      const response = await api.post('/auth/refresh');
+      const newAccessToken = response.data.accessToken;
+      if (newAccessToken) {
+        await login(newAccessToken);
+      }
+    } catch (error) {
+      console.error("Lỗi refresh user:", error);
+    }
+  }, [login]);
   
 
   return (
@@ -122,7 +135,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       isLoggedIn: !!user,
       isLoading,
       login: login,
-      logout 
+      logout,
+      refreshUser
     }}>
       {children}
     </AuthContext.Provider>
