@@ -43,8 +43,8 @@ export default function SignUpPage() {
         password 
       });
       if(res) {
-        router.push('/verify-email')
-        toast.success('Đăng ký thành công! Bạn sẽ được chuyển đến trang xác thực email.');
+        router.push('/login')
+        toast.success('Đăng ký thành công! Vui lòng đăng nhập lại.');
       }
     } catch (err) {
       if (isAxiosError(err)) {

@@ -31,6 +31,7 @@ export default function CourseDetailPage() {
     const [error, setError] = useState<string | null>(null);
     const [isPaying, setIsPaying] = useState(false);
     const [canLearn, setCanLearn] = useState(false);
+    
     const [qrString, setQrString] = useState<string | null>(null);
     const [showQRDialog, setShowQRDialog] = useState(false);
     const [countdown, setCountdown] = useState<number>(120); // 2 phút

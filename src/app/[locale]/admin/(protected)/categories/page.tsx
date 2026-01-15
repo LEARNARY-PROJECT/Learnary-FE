@@ -85,7 +85,6 @@ export default function CategoriesPage() {
       setIsLoading(false);
     }
   };
-
   const handleDeleteCategory = async (categoryId: string) => {
     ToasterConfirm({
       title: "Xóa danh mục",
@@ -192,6 +191,7 @@ export default function CategoriesPage() {
             </TableRow>
           </TableHeader>
           <TableBody>
+
             {filteredCategories.map((category) => (
               <TableRow key={category.category_id}>
                 <TableCell>
@@ -239,7 +239,7 @@ export default function CategoriesPage() {
                       >
                         Copy ID
                       </DropdownMenuItem>
-                      <DropdownMenuItem>Xem chi tiết</DropdownMenuItem>
+                      {/* <DropdownMenuItem>Xem chi tiết</DropdownMenuItem> */}
                       <DropdownMenuItem
                         onClick={() => setEditDialog({ open: true, category })}
                       >
