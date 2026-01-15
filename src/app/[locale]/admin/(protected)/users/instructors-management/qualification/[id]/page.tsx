@@ -1,23 +1,23 @@
 "use client";
- // Đường dẫn tới file context của bạn
+// Đường dẫn tới file context của bạn
 import React, { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import api from "@/app/lib/axios";
 import type { AxiosError } from 'axios';
 import { toast } from "sonner";
-import { 
-  ArrowLeft, CheckCircle2, XCircle, Calendar, 
-  MapPin, FileText, User, Mail, Award 
+import {
+  ArrowLeft, CheckCircle2, XCircle, Calendar,
+  MapPin, FileText, User, Mail, Award
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { 
-  Card, 
-  CardContent, 
-  CardDescription, 
-  CardHeader, 
-  CardTitle 
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle
 } from "@/components/ui/card";
 import {
   Dialog,
@@ -112,24 +112,24 @@ export default function InstructorQualificationPage() {
   const handleApprove = async () => {
     try {
       setProcessing(true);
-      await api.patch(`/instructor-qualifications/${id}/approve`); 
+      await api.patch(`/instructor-qualifications/${id}/approve`);
       toast.success("Đã phê duyệt yêu cầu thành công!");
-      setIsApproveOpen(false); 
-      router.push("/admin/users/instructors-management"); 
+      setIsApproveOpen(false);
+      router.push("/admin/users/instructors-management");
     } catch (error) {
       const axiosErr = error as AxiosError<{ message?: string }>;
       toast.error(axiosErr?.response?.data?.message || "Phê duyệt thất bại");
     } finally {
       setProcessing(false);
     }
-};
+  };
 
   const handleReject = async () => {
     try {
       setProcessing(true);
       await api.patch(`/instructor-qualifications/${id}/reject`);
       toast.success("Đã từ chối yêu cầu.");
-      setIsRejectOpen(false); 
+      setIsRejectOpen(false);
       router.push("/admin/users/instructors-management");
     } catch (error) {
       const axiosErr = error as AxiosError<{ message?: string }>;
@@ -157,10 +157,8 @@ export default function InstructorQualificationPage() {
     email: "",
     avatar: null
   };
-
   return (
     <div className="container mx-auto p-6 max-w-5xl space-y-6">
-      {/* Header Navigation */}
       <div className="flex items-center gap-4">
         <Button variant="ghost" size="icon" onClick={() => router.back()}>
           <ArrowLeft className="h-5 w-5" />
@@ -170,8 +168,8 @@ export default function InstructorQualificationPage() {
           <p className="text-muted-foreground text-sm">ID: {data.instructor_qualification_id}</p>
         </div>
         <div className="ml-auto">
-          <Badge 
-            variant={data.status === "Pending" ? "outline" : data.status === "Approved" ? "default" : "destructive"} 
+          <Badge
+            variant={data.status === "Pending" ? "outline" : data.status === "Approved" ? "default" : "destructive"}
             className="text-base px-4 py-1"
           >
             {data.status === "Pending" ? "Chờ phê duyệt" : data.status === "Approved" ? "Đã duyệt" : "Đã từ chối"}
@@ -182,7 +180,7 @@ export default function InstructorQualificationPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Cột trái: Thông tin chi tiết */}
         <div className="lg:col-span-2 space-y-6">
-          
+
           {/*Thông tin Bằng cấp */}
           <Card>
             <CardHeader className="bg-slate-50">
@@ -240,12 +238,12 @@ export default function InstructorQualificationPage() {
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                 {data.qualification_images.map((img, index) => (
                   <div key={index} className="group relative aspect-4/3 border rounded-lg overflow-hidden bg-gray-100 cursor-pointer">
-                    <Image 
-                      src={img} 
-                      alt="Minh chứng" 
-                      fill 
-                      className="object-cover hover:scale-105 transition-transform" 
-                      onClick={() => window.open(img, "_blank")} 
+                    <Image
+                      src={img}
+                      alt="Minh chứng"
+                      fill
+                      className="object-cover hover:scale-105 transition-transform"
+                      onClick={() => window.open(img, "_blank")}
                     />
                   </div>
                 ))}
@@ -256,7 +254,7 @@ export default function InstructorQualificationPage() {
 
         {/* Cột phải: Thông tin user & Hành động */}
         <div className="space-y-6">
-          
+
           {/* Thông tin ứng viên */}
           <Card>
             <CardHeader>
@@ -269,11 +267,11 @@ export default function InstructorQualificationPage() {
               <div className="flex items-center gap-4">
                 <div className="h-12 w-12 rounded-full bg-gray-200 relative overflow-hidden">
                   {applicant.avatar && (
-                    <Image 
-                      src={applicant.avatar} 
-                      alt="Avatar" 
-                      fill 
-                      className="object-cover" 
+                    <Image
+                      src={applicant.avatar}
+                      alt="Avatar"
+                      fill
+                      className="object-cover"
                     />
                   )}
                 </div>
@@ -287,8 +285,8 @@ export default function InstructorQualificationPage() {
               </div>
               <Separator />
               <div className="text-sm">
-                 <p className="text-muted-foreground">Ngày gửi yêu cầu:</p>
-                 <p>{formatDateTime(data.createdAt)}</p>
+                <p className="text-muted-foreground">Ngày gửi yêu cầu:</p>
+                <p>{formatDateTime(data.createdAt)}</p>
               </div>
             </CardContent>
           </Card>
@@ -301,7 +299,7 @@ export default function InstructorQualificationPage() {
                 <CardDescription>Vui lòng kiểm tra kỹ thông tin trước khi quyết định.</CardDescription>
               </CardHeader>
               <CardContent className="space-y-3">
-                
+
                 {/* Dialog Phê duyệt */}
                 <Dialog open={isApproveOpen} onOpenChange={setIsApproveOpen}>
                   <DialogTrigger asChild>

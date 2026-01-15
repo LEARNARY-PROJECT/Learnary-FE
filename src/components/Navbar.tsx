@@ -53,7 +53,7 @@ export const NavbarLinks = (userRole?: string, accountStatus?: string, isActive?
   const adminLink = userRole === "ADMIN" ? [
     {
       name: t("admin"),
-      href: "/admin-side"
+      href: "/admin/dashboard"
     }
   ] : [];
   const becomeLecturerLink = (!userRole || (userRole !== "INSTRUCTOR" && userRole !== "ADMIN")) && accountStatus !=="Freezed" ? [

@@ -29,7 +29,7 @@ const aboutLinks = [
 
 function AboutSidebar() {
   return (
-    <Sidebar className="">
+    <Sidebar className="mt-20">
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupLabel>Về chúng tôi</SidebarGroupLabel>
@@ -54,12 +54,14 @@ function AboutSidebar() {
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   return (
-    <SidebarProvider>
-      <AboutSidebar />
-      <main className="flex-1 w-full ml-10 mt-10">
-        <SidebarTrigger />
-        {children}
-      </main>
-    </SidebarProvider>
+    <div className="pt-10">
+      <SidebarProvider>
+        <AboutSidebar />
+        <main className="flex-1 w-full ml-10 mt-10">
+          <SidebarTrigger />
+          {children}
+        </main>
+      </SidebarProvider>
+    </div>
   )
 }

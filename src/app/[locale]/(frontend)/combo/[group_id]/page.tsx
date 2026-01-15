@@ -16,7 +16,7 @@ import { Badge } from '@/components/ui/badge';
 import { Package, Star, Clock } from 'lucide-react';
 import Image from 'next/image';
 import { formatPriceVND } from '@/utils/convert_price';
-
+import { QRCodeCanvas } from 'qrcode.react';
 export default function ComboDetailPage() {
     const params = useParams();
     const router = useRouter();
@@ -28,6 +28,62 @@ export default function ComboDetailPage() {
     const [error, setError] = useState<string | null>(null);
     const [isPaying, setIsPaying] = useState(false);
 
+    const [qrString, setQrString] = useState<string | null>(null);
+    const [showQRDialog, setShowQRDialog] = useState(false);
+    const [countdown, setCountdown] = useState<number>(120); // 2 phút
+    const countdownRef = React.useRef<NodeJS.Timeout | null>(null);
+    const [orderCode, setOrderCode] = useState<string | null>(null);
+    const [amount, setAmount] = useState<string | null>(null);
+    const formatVNCurrency = (value: string | number | null) => {
+        if (!value || isNaN(Number(value))) return '0 ₫';
+        return Number(value).toLocaleString('vi-VN') + ' ₫';
+    };
+    useEffect(() => {
+        if (showQRDialog && qrString) {
+            setCountdown(60);
+            countdownRef.current = setInterval(() => {
+                setCountdown((prev) => {
+                    if (prev <= 1) {
+                        clearInterval(countdownRef.current!);
+                        setShowQRDialog(false);
+                        if (orderCode) {
+                            api.post('/payment/cancel', { orderCode })
+                                .then(() => toast.success('Hết thời gian thanh toán, giao dịch đã bị huỷ!'))
+                                .catch(() => toast.error('Huỷ giao dịch thất bại!'));
+                        }
+                        return 0;
+                    }
+                    return prev - 1;
+                });
+            }, 1000);
+        }
+        return () => {
+            if (countdownRef.current) clearInterval(countdownRef.current);
+        };
+    }, [showQRDialog, qrString, orderCode]);
+    // Poll trạng thái thanh toán
+    useEffect(() => {
+        if (!orderCode || !showQRDialog) return;
+        const interval = setInterval(async () => {
+            try {
+                const res = await api.get(`/payment/status?orderCode=${orderCode}`);
+                if (res.data.status === 'Success') {
+                    setShowQRDialog(false);
+                    toast.success('Thanh toán thành công!');
+                    clearInterval(interval);
+                    router.push('/learn-area');
+                }
+                if (res.data.status === 'Cancel') {
+                    setShowQRDialog(false);
+                    toast.error('Giao dịch đã bị huỷ!');
+                    clearInterval(interval);
+                }
+            } catch (err) {
+                console.error('Error checking payment status:', err);
+            }
+        }, 3000);
+        return () => clearInterval(interval);
+    }, [orderCode, showQRDialog, router]);
     useEffect(() => {
         const fetchComboData = async () => {
             setIsLoading(true);
@@ -65,28 +121,25 @@ export default function ComboDetailPage() {
 
         try {
             setIsPaying(true);
-            console.log("Đang tạo link thanh toán cho combo...");
-            
             const response = await api.post('/payment/create-combo-link', {
                 userId: user.id,
                 groupId: comboData.group_id
             });
-
-            const { checkoutUrl } = response.data;
-            
-            if (checkoutUrl) {
-                sessionStorage.setItem('payment_combo_id', comboData.group_id);
-                window.location.href = checkoutUrl;
-            } else {
-                toast.error("Không nhận được link thanh toán");
+            const { qrCode, orderCode, amount } = response.data
+            if (!qrCode) {
+                toast.error("Không nhận được mã thanh toán");
+                return
             }
+            setOrderCode(orderCode);
+            setAmount(amount);
+            setQrString(qrCode);
+            setShowQRDialog(true)
 
         } catch (err) {
             console.error("Payment Error:", err);
-            
             if (isAxiosError(err)) {
-                const errorMessage = err.response?.data?.error 
-                    || err.response?.data?.message 
+                const errorMessage = err.response?.data?.error
+                    || err.response?.data?.message
                     || "Thanh toán thất bại";
                 toast.error(errorMessage);
             } else {
@@ -134,6 +187,42 @@ export default function ComboDetailPage() {
 
     return (
         <div className="min-h-screen bg-white">
+            {/* Dialog hiển thị QR code */}
+            {showQRDialog && qrString && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ background: 'rgba(0,0,0,0.3)', backdropFilter: 'blur(2px)' }}>
+                    <div className="bg-white p-6 rounded-lg shadow-lg flex flex-col items-center w-[320px]">
+                        <h2 className="text-xl font-bold mb-4">Quét mã QR để thanh toán</h2>
+                        {qrString ? (
+                            <QRCodeCanvas value={qrString} size={160} />
+                        ) : (
+                            <p>Đang tải mã QR...</p>
+                        )}
+                        <div className="mt-4 text-lg text-red-600 font-bold">
+                            Thời gian còn lại: {countdown}s
+                        </div>
+                        <div className="mt-4 text-sm text-gray-400 font-bold">
+                            Số tiền cần thanh toán: {formatVNCurrency(amount)}
+                        </div>
+                        <button
+                            className="mt-6 px-6 py-2 bg-red-500 text-white rounded cursor-pointer hover:bg-red-600"
+                            onClick={async () => {
+                                setShowQRDialog(false);
+                                if (orderCode) {
+                                    try {
+                                        await api.post('/payment/cancel', { orderCode });
+                                        toast.success('Giao dịch đã bị huỷ thành công!');
+                                    } catch (err) {
+                                        console.error('Error cancelling payment:', err);
+                                        toast.error('Huỷ giao dịch thất bại!');
+                                    }
+                                }
+                            }}
+                        >
+                            Đóng
+                        </button>
+                    </div>
+                </div>
+            )}
             {/* Header Section */}
             <div className="bg-linear-to-r from-purple-900 to-purple-700 text-white py-8 px-4 md:px-10">
                 <div className="max-w-7xl mx-auto">
@@ -277,8 +366,8 @@ export default function ComboDetailPage() {
                                         Về combo này
                                     </h2>
                                     <p className="font-roboto text-gray-600">
-                                        Combo này bao gồm {courseCount} khóa học được tuyển chọn kỹ lưỡng, 
-                                        giúp bạn học tập hiệu quả và tiết kiệm chi phí. Tất cả khóa học 
+                                        Combo này bao gồm {courseCount} khóa học được tuyển chọn kỹ lưỡng,
+                                        giúp bạn học tập hiệu quả và tiết kiệm chi phí. Tất cả khóa học
                                         đều được giảng dạy bởi các giảng viên chuyên nghiệp với nhiều năm kinh nghiệm.
                                     </p>
                                 </div>
@@ -318,7 +407,7 @@ export default function ComboDetailPage() {
                                     </div>
                                 </div>
 
-                                <Button 
+                                <Button
                                     className="w-full mb-3 bg-purple-600 hover:bg-purple-700 text-white font-roboto-bold py-6 text-lg cursor-pointer"
                                     onClick={handleBuyNow}
                                     disabled={isPaying}
@@ -360,7 +449,7 @@ export default function ComboDetailPage() {
                             {formatPriceVND(discountedPrice)}
                         </span>
                     </div>
-                    <Button 
+                    <Button
                         className="bg-purple-600 hover:bg-purple-700 cursor-pointer font-roboto-bold px-8 py-6"
                         onClick={handleBuyNow}
                         disabled={isPaying}

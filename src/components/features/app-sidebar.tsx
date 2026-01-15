@@ -4,7 +4,7 @@ import * as React from "react";
 import {
   BookOpen,
   LayoutDashboard,
-  MessageSquare,
+  // MessageSquare,
 /*   Settings2, */
   SquareStack,
   Users,
@@ -82,9 +82,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 console.error(`Error fetching resources for permission ${permissionId}:`, error);
               }
             }
-            
               const resourcesArray = Array.from(resourceSet);
-            console.log("🔑 Admin Resources:", resourcesArray);
             setAdminResources(resourcesArray);
           } catch (error) {
             console.error("Error fetching admin permissions:", error);
@@ -154,16 +152,16 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       ],
       requiredResources: ["USER", "INSTRUCTOR"],
     },
-    {
-      title: "Phản hồi",
-      url: `${adminBasePath}/feedbacks`,
-      icon: MessageSquare,
-      isActive: pathname.startsWith(`${adminBasePath}/feedbacks`),
-      items: [
-        { title: "Tất cả phản hồi", url: `${adminBasePath}/feedbacks` },
-      ],
-      requiredResources: ["FEEDBACK"],
-    },
+    // {
+    //   title: "Phản hồi",
+    //   url: `${adminBasePath}/feedbacks`,
+    //   icon: MessageSquare,
+    //   isActive: pathname.startsWith(`${adminBasePath}/feedbacks`),
+    //   items: [
+    //     { title: "Tất cả phản hồi", url: `${adminBasePath}/feedbacks` },
+    //   ],
+    //   requiredResources: ["FEEDBACK"],
+    // },
     {
       title: "Transactions",
       url: `${adminBasePath}/transactions`,
@@ -199,18 +197,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   ];
 
   const navMain = allNavItems.filter(item => {
-    console.log(`📋 Checking item: ${item.title}, required: [${item.requiredResources?.join(', ') || 'NONE'}]`);
-    
     if (adminResources.includes("ALL")) {
-      console.log(`  ✅ Admin has ALL permission`);
       return true;
     }
     if (!item.requiredResources || item.requiredResources.length === 0) {
-      console.log(`  ✅ Item has no requirements`);
       return true;
     }
     const hasPermission = item.requiredResources.some(resource => adminResources.includes(resource));
-    console.log(`  ${hasPermission ? '✅' : '❌'} Permission check result: ${hasPermission}`);
     return hasPermission;
   });
 

@@ -42,6 +42,7 @@ type UserProps = {
   nation?: string,
   bio?: string,
   isActive: boolean,
+  googleId: string,
   role?: string,
   createdAt?: Date,
   last_login?: Date,
@@ -94,6 +95,7 @@ export default function ProfilePage() {
   const [isEditing, setIsEditing] = useState(false);
   const [isEditingInstructor, setIsEditingInstructor] = useState(false);
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+  const [isGoogleUser, setIsGooleUser] = useState(false)
 
   const [isChangingPassword, setIsChangingPassword] = useState(false);
   const [oldPassword, setOldPassword] = useState('');
@@ -112,7 +114,8 @@ export default function ProfilePage() {
     address: "",
     city: "",
     nation: "",
-    bio: ""
+    bio: "",
+    googleId: ""
   });
 
   const [instructorFormData, setInstructorFormData] = useState({
@@ -194,16 +197,16 @@ export default function ProfilePage() {
       toast.success("Cập nhật hồ sơ thành công");
       return res.data;
     } catch (error) {
-      if(axios.isAxiosError(error)) {
+      if (axios.isAxiosError(error)) {
         const status = error.response?.status
         const errMsg = error.response?.data.error;
-        switch(status) {
+        switch (status) {
           case 409:
             toast.info(errMsg || "Số điện thoại đã được sử dụng, vui lòng sử dụng số khác")
             break;
           case 404:
-             toast.info(errMsg || "Lỗi không tìm thấy người dùng")
-             break;
+            toast.info(errMsg || "Lỗi không tìm thấy người dùng")
+            break;
           default:
             toast.error("Cập nhật hồ sơ thất bại")
         }
@@ -246,8 +249,10 @@ export default function ProfilePage() {
             city: userData.city || "",
             nation: userData.nation || "",
             bio: userData.bio || "",
+            googleId: userData.googleId || ""
           });
         }
+        setIsGooleUser(userData.googleId !== null && userData.googleId !== undefined);
       } catch (error) { console.log("Lỗi fetch user", error) }
     }
     if (user) takeUserInfo();
@@ -767,13 +772,27 @@ export default function ProfilePage() {
                               </>
                             ) : (
                               <div className="flex flex-col gap-2 w-full">
-                                <div>
-                                  <p className="font-bold text-gray-800">Mật khẩu</p>
-                                </div>
-                                <div className="flex gap-2 items-center w-full justify-between">
-                                  <p className="text-sm">**********</p>
-                                  <Button variant="outline" type="button" onClick={() => setIsChangingPassword(true)} className="cursor-pointer">Đổi mật khẩu</Button>
-                                </div>
+                                {isGoogleUser == true ? (
+                                  <>
+                                    <div>
+                                      <p className="font-bold text-gray-800">Mật khẩu</p>
+                                    </div>
+                                    <div className="flex gap-2 items-center w-full justify-between">
+                                      <p className="text-sm">**********</p>
+                                      <Button variant="outline" type="button" onClick={() => setIsChangingPassword(true)} className="cursor-pointer" disabled>Đổi mật khẩu</Button>
+                                    </div>
+                                  </>
+                                ) : (
+                                  <>
+                                    <div>
+                                      <p className="font-bold text-gray-800">Mật khẩu</p>
+                                    </div>
+                                    <div className="flex gap-2 items-center w-full justify-between">
+                                      <p className="text-sm">**********</p>
+                                      <Button variant="outline" type="button" onClick={() => setIsChangingPassword(true)} className="cursor-pointer">Đổi mật khẩu</Button>
+                                    </div>
+                                  </>
+                                )}
                               </div>
                             )}
                           </div>
