@@ -42,6 +42,7 @@ const CourseSearchBar: React.FC<CourseSearchBarProps> = ({
             value={minPrice}
             onChange={(e) => onMinPriceChange(e.target.value)}
             className="w-32 h-12"
+            step="1000"
             min="0"
           />
           <span className="text-sm text-gray-600">-</span>
@@ -51,6 +52,7 @@ const CourseSearchBar: React.FC<CourseSearchBarProps> = ({
             value={maxPrice}
             onChange={(e) => onMaxPriceChange(e.target.value)}
             className="w-32 h-12"
+            step="1000"
             min="0"
           />
         </div>

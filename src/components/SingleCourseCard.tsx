@@ -59,12 +59,19 @@ const SingleCourseCard: React.FC<SingleCourseCardProps> = ({ course }) => {
                   className={imageClass}
                 />
               </Link>
-              <div className="absolute top-2 left-2 z-10">
+              <div className="absolute top-2 left-2 right-2 z-10 flex justify-between items-start">
                 <Badge className="bg-white ">
                   <p className="text-sm text-orange-500 font-roboto-condensed-bold">
                     {dataCourse.category?.category_name ?? "không có thông tin loại khoá học"}
                   </p>
                 </Badge>
+                {dataCourse.hot === true && (
+                  <Badge className="bg-white">
+                    <p className="text-sm text-red-500 font-roboto-condensed-bold">
+                      Hot
+                    </p>
+                  </Badge>
+                )}
               </div>
             </div>
 

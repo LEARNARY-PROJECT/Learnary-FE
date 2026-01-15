@@ -103,7 +103,7 @@ const NotesTab: React.FC<NotesTabProps> = ({ lessonId }) => {
 
     return (
         <div>
-            <Tabs defaultValue="list" className="w-full">
+            <Tabs defaultValue="list" className="w-full mb-10">
                 <TabsList className={`${isMobile ? `flex gap-3 pl-4` : 'flex gap-3'}`}>
                     <TabsTrigger
                         value="list"

@@ -305,7 +305,7 @@ const CourseDetailPage = () => {
                       <p className="text-green-600 text-sm mt-1">✓ Đã hoàn thành</p>
                     )}
                   </div>
-                  <div className={`${isMobile ? 'tab mt-5 ml-5' : 'tab mt-5'}`}>
+                  <div className={`${isMobile ? 'tab mt-5 ml-5 ' : 'tab mt-5 '}`}>
                     <NotesTab lessonId={currentLesson.lesson_id} />
                   </div>
                 </div>

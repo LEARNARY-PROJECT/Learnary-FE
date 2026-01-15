@@ -151,10 +151,11 @@ const CourseListWithFilters: React.FC = () => {
         ?.toLowerCase()
         .includes(searchTerm.toLowerCase());
 
-      const coursePrice = course.price ?? 0;
+      const saleOff = Number(course.sale_off);
+      const discountedPrice = (course.price ?? 0) - (course.price ?? 0) * saleOff / 100;
       const min = minPrice ? parseFloat(minPrice) : 0;
       const max = maxPrice ? parseFloat(maxPrice) : Infinity;
-      const matchesPrice = coursePrice >= min && coursePrice <= max;
+      const matchesPrice = discountedPrice >= min && discountedPrice <= max;
 
       const matchesCategory =
         selectedCategory === "all" || course.category_id === selectedCategory;

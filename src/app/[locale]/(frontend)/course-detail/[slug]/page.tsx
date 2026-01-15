@@ -226,6 +226,7 @@ export default function CourseDetailPage() {
                 /* last_updated={courseData.last_updated} */
                 available_language={courseData.available_language ?? DEFAULT_LANGUAGE}
                 level_name={courseData.level?.level_name ?? "Chưa có cấp độ cho khoá học này"}
+                hot={courseData.hot === true}
             />
 
             {error && (
@@ -284,6 +285,7 @@ export default function CourseDetailPage() {
                             price={courseData.price || 0}
                             discounted_price={courseData.price || 0}
                             sale_off={courseData.sale_off}
+                            hot={courseData.hot === true}
                             includes={includesData}
                             onBuyNow={handleBuyNow}
                             isLoading={isPaying}

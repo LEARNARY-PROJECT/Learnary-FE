@@ -15,6 +15,7 @@ interface CourseSidebarProps {
   price: number;
   discounted_price?: number;
   sale_off?: number;
+  hot: boolean;
   course_slug: string;
   course_id: string;
   includes: Array<{

@@ -86,9 +86,9 @@ const CourseFilters: React.FC<CourseFiltersProps> = ({
             variant="outline"
             onClick={onClearFilters}
             disabled={!hasActiveFilters}
-            className="h-12 px-4"
+            className="px-4 cursor-pointer"
           >
-            <X className="h-4 w-4 mr-2" />
+            <X className="h-1 w-4 mr-2" />
             Xóa bộ lọc
           </Button>
         </div>
