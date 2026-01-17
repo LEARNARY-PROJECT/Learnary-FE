@@ -249,7 +249,7 @@ const CourseDetailPage = () => {
         )}
       </div>
     ) : (
-      <div className={`flex flex-col w-full h-screen pl-10 pr-20 pb-20`}>
+      <div className={`flex flex-col w-full h-screen pl-10 pr-20 pb-20 mb-50`}>
         <div className='flex flex-col'>
           <div className="breadcrumb ml-5 pt-6 pb-3">
             <Breadcrumb>

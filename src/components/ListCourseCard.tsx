@@ -99,9 +99,11 @@ const ListCourseCard: React.FC<ListCourseCardProps> = ({ title, courses }) => {
   const coursesByCategory = useMemo(() => {
     const grouped: CoursesByCategory[] = [];
     categories.forEach((category) => {
-      const categoryCourses = coursesData.filter(
+      let categoryCourses = coursesData.filter(
         (course) => course.category_id === category.category_id
       ).map((course) => ({ ...course, hot: hotCourseIds.includes(course.course_id) }));
+      // Sắp xếp hot lên đầu
+      categoryCourses = categoryCourses.sort((a, b) => (b.hot ? 1 : 0) - (a.hot ? 1 : 0));
       if (categoryCourses.length > 0) {
         grouped.push({
           category,
@@ -110,9 +112,11 @@ const ListCourseCard: React.FC<ListCourseCardProps> = ({ title, courses }) => {
       }
     });
     // Add courses without category
-    const coursesWithoutCategory = coursesData.filter(
+    let coursesWithoutCategory = coursesData.filter(
       (course) => !course.category_id
     ).map((course) => ({ ...course, hot: hotCourseIds.includes(course.course_id) }));
+    // Sắp xếp hot lên đầu
+    coursesWithoutCategory = coursesWithoutCategory.sort((a, b) => (b.hot ? 1 : 0) - (a.hot ? 1 : 0));
     if (coursesWithoutCategory.length > 0) {
       grouped.push({
         category: { category_id: "none", category_name: "Khác" },
