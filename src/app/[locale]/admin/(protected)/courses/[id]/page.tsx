@@ -70,6 +70,7 @@ type CourseData = {
   price: number;
   original_price?: number;
   sale_off?: number | null; // phần trăm giảm giá
+  hot: boolean;
   status: "Draft" | "Published" | "Pending" | "Archived";
   category_name: string;
   category?: { category_name: string };
@@ -274,6 +275,14 @@ export default function AdminCourseDetailPage() {
                      course.status === 'Draft' ? "Draft" : 
                      course.status === 'Archived' ? "Archived" : "Khác"}
                 </Badge>
+                <Badge 
+                    className={
+                        course.hot === true ? "bg-red-600 hover:bg-red-700" : "bg-white"
+                    }
+                >
+                    {
+                    course.hot === true ? "Hot" : ""}
+                </Badge>
             </div>
                     {/* Hiển thị note cho giảng viên khi bị từ chối */}
                     {course.status === 'Archived' && (
@@ -393,6 +402,7 @@ export default function AdminCourseDetailPage() {
                     last_updated={formattedLastUpdated}
                     available_language={course.available_language}
                     level_name={levelName}
+                    hot={course.hot}
                 />
 
                 <div className="max-w-7xl mx-auto mt-8">
@@ -438,6 +448,7 @@ export default function AdminCourseDetailPage() {
                                     price={course.price}
                                     discounted_price={course.price || 0}
                                     sale_off={course.sale_off || 0}
+                                    hot={course.hot}
                                     includes={mappedIncludes}
                                     isPreviewMode={true}
                                 />

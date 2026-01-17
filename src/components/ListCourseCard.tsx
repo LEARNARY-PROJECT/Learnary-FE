@@ -20,7 +20,6 @@ const fetchListCourses = async (): Promise<Course[]> => {
   try {
     const res = await api.get("/courses");
     const apiData = res.data;
-    
     let data: Course[] = [];
     if (apiData.success && Array.isArray(apiData.data)) {
       data = apiData.data;
@@ -29,7 +28,6 @@ const fetchListCourses = async (): Promise<Course[]> => {
     } else {
       return [];
     }
-    
     if (!data || data.length === 0) {
       return [];
     }
@@ -37,6 +35,21 @@ const fetchListCourses = async (): Promise<Course[]> => {
     return PublishedCourse;
   } catch {
     toast.error("Lỗi khi lấy danh sách khoá học!");
+    return [];
+  }
+};
+
+// Lấy top 10 khóa học bán chạy nhất từ BE
+const fetchTopSellingCourses = async (): Promise<string[]> => {
+  try {
+    const res = await api.get("/courses/top-selling");
+    const apiData = res.data;
+    console.log("Top selling courses data from BE:", apiData);
+    if (apiData.success && Array.isArray(apiData.data)) {
+      return apiData.data.map((c: Course) => c.course_id);
+    }
+    return [];
+  } catch {
     return [];
   }
 };
@@ -59,8 +72,10 @@ const fetchCategories = async (): Promise<Category[]> => {
 };
 
 const ListCourseCard: React.FC<ListCourseCardProps> = ({ title, courses }) => {
+
   const [coursesData, setCoursesData] = useState<Course[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [hotCourseIds, setHotCourseIds] = useState<string[]>([]);
   const isMobile = useIsMobile();
 
   useEffect(() => {
@@ -73,19 +88,22 @@ const ListCourseCard: React.FC<ListCourseCardProps> = ({ title, courses }) => {
       }
       const cats = await fetchCategories();
       setCategories(cats);
+      // Lấy top 10 bán chạy nhất từ BE
+      const hotIds = await fetchTopSellingCourses();
+      setHotCourseIds(hotIds);
     };
     fetchData();
   }, [courses]);
 
-  // Group courses by category
+  // Group courses by category, gắn hot cho top 10 từ BE
   const coursesByCategory = useMemo(() => {
     const grouped: CoursesByCategory[] = [];
-    
-    // Show all categories with their courses
     categories.forEach((category) => {
-      const categoryCourses = coursesData.filter(
+      let categoryCourses = coursesData.filter(
         (course) => course.category_id === category.category_id
-      );
+      ).map((course) => ({ ...course, hot: hotCourseIds.includes(course.course_id) }));
+      // Sắp xếp hot lên đầu
+      categoryCourses = categoryCourses.sort((a, b) => (b.hot ? 1 : 0) - (a.hot ? 1 : 0));
       if (categoryCourses.length > 0) {
         grouped.push({
           category,
@@ -93,20 +111,20 @@ const ListCourseCard: React.FC<ListCourseCardProps> = ({ title, courses }) => {
         });
       }
     });
-
     // Add courses without category
-    const coursesWithoutCategory = coursesData.filter(
+    let coursesWithoutCategory = coursesData.filter(
       (course) => !course.category_id
-    );
+    ).map((course) => ({ ...course, hot: hotCourseIds.includes(course.course_id) }));
+    // Sắp xếp hot lên đầu
+    coursesWithoutCategory = coursesWithoutCategory.sort((a, b) => (b.hot ? 1 : 0) - (a.hot ? 1 : 0));
     if (coursesWithoutCategory.length > 0) {
       grouped.push({
         category: { category_id: "none", category_name: "Khác" },
         courses: coursesWithoutCategory,
       });
     }
-
     return grouped;
-  }, [coursesData, categories]);
+  }, [coursesData, categories, hotCourseIds]);
 
   if (!coursesData || coursesData.length === 0) {
     return (

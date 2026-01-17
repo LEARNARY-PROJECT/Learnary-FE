@@ -13,6 +13,7 @@ interface CourseHeaderProps {
   last_updated?: string;
   available_language?: string;
   level_name: string;
+  hot: boolean;
 }
 
 export default function CourseHeader({
@@ -25,7 +26,8 @@ export default function CourseHeader({
   created_by,
   last_updated,
   available_language,
-  level_name
+  level_name,
+  hot
 }: CourseHeaderProps) {
   return (
     <div className="bg-gray-900 text-white py-8 px-4 md:px-10">
@@ -72,6 +74,11 @@ export default function CourseHeader({
           <Badge variant="outline" className="text-pink-600 font-roboto-bold border-gray-600 bg-white">
             {level_name}
           </Badge>
+          {hot === true && (
+            <Badge variant="outline" className="text-pink-600 font-roboto-bold border-gray-600 bg-white">
+              Hot Course
+            </Badge>
+          )}
         </div>
       </div>
     </div>
