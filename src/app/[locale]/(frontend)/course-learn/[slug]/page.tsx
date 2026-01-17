@@ -249,7 +249,7 @@ const CourseDetailPage = () => {
         )}
       </div>
     ) : (
-      <div className={`flex flex-col w-full h-screen pl-10 pr-20 pb-20`}>
+      <div className={`flex flex-col w-full h-screen pl-10 pr-20 pb-20 mb-50`}>
         <div className='flex flex-col'>
           <div className="breadcrumb ml-5 pt-6 pb-3">
             <Breadcrumb>
@@ -305,7 +305,7 @@ const CourseDetailPage = () => {
                       <p className="text-green-600 text-sm mt-1">✓ Đã hoàn thành</p>
                     )}
                   </div>
-                  <div className={`${isMobile ? 'tab mt-5 ml-5' : 'tab mt-5'}`}>
+                  <div className={`${isMobile ? 'tab mt-5 ml-5 ' : 'tab mt-5 '}`}>
                     <NotesTab lessonId={currentLesson.lesson_id} />
                   </div>
                 </div>

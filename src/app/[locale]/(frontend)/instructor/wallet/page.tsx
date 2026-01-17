@@ -69,7 +69,6 @@ export default function MyWalletPage() {
         }
     }, [user, isLoggedIn, authLoading, router]);
 
-    // 1. Hàm lấy thông tin Ví (Chạy khi load trang)
     const fetchWallet = useCallback(async () => {
         if (!user?.id) return;
         
@@ -88,7 +87,6 @@ export default function MyWalletPage() {
         }
     }, [user?.id]);
 
-    // 1.5. Hàm lấy thông tin Instructor và Bank Account
     const fetchInstructorAndBank = useCallback(async () => {
         if (!user?.id) return;
         
@@ -125,7 +123,6 @@ export default function MyWalletPage() {
         }
     }, [user?.id, user?.role, fetchWallet, fetchInstructorAndBank]);
 
-    // 1.6. Hàm lưu thông tin ngân hàng
     const handleSaveBankAccount = async () => {
         if (!instructorId) {
             toast.error('Không tìm thấy thông tin giảng viên');
@@ -148,7 +145,6 @@ export default function MyWalletPage() {
         }
     };
 
-    // 2. Hàm xử lý Rút tiền
     const handleWithdraw = async (e: React.FormEvent) => {
         e.preventDefault();
         
@@ -166,12 +162,9 @@ export default function MyWalletPage() {
             return;
         }
 
-        // Tạo note từ thông tin ngân hàng
         const bankNote = `${bankForm.bank_name} - ${bankForm.account_number} - ${bankForm.account_holder_name}`;
-
         try {
             setIsWithdrawing(true);
-            
             // Gọi API POST rút tiền
             await api.post('/withdraw/request', {
                 userId: user.id,
@@ -180,15 +173,10 @@ export default function MyWalletPage() {
             });
 
             toast.success("Gửi yêu cầu rút tiền thành công!");
-            
-            // Reset form
             setAmount('');
 
             // Cập nhật lại số dư ngay lập tức (Trừ tạm thời trên giao diện cho mượt)
             setWallet(prev => prev ? { ...prev, balance: prev.balance - withdrawAmount } : null);
-            
-            // Hoặc gọi lại fetchWallet() để lấy số liệu chuẩn từ Server
-            // fetchWallet(); 
 
         } catch (err) {
             if (isAxiosError(err)) {
@@ -201,10 +189,7 @@ export default function MyWalletPage() {
         }
     };
 
-    // Hàm format tiền VND
     const formatVND = (num: number) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(num);
-
-    // Hàm format ngày giờ
     const formatDate = (dateString: string) => {
         return new Date(dateString).toLocaleString('vi-VN', {
             year: 'numeric',
@@ -215,7 +200,6 @@ export default function MyWalletPage() {
         });
     };
 
-    // Hàm lấy icon status
     const getStatusIcon = (status: string) => {
         switch (status) {
             case 'Success':
@@ -258,8 +242,7 @@ export default function MyWalletPage() {
                     Quay lại khu vực giảng viên
                     </Button>
                 </Link>
-                
-                {/* --- CARD 1: HIỂN THỊ SỐ DƯ --- */}
+            
                 <div className="bg-linear-to-r from-purple-600 to-blue-600 rounded-2xl p-8 text-white shadow-lg">
                     <h2 className="text-lg font-medium opacity-90">Số dư khả dụng</h2>
                     <div className="text-4xl font-bold mt-2">
@@ -271,7 +254,6 @@ export default function MyWalletPage() {
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    {/* --- CARD 2: FORM RÚT TIỀN --- */}
                     <div className="lg:col-span-1">
                         <div className="bg-white rounded-xl shadow p-6 sticky top-6">
                             <h3 className="text-xl font-bold text-gray-800 mb-4 border-b pb-2">Tạo lệnh rút tiền</h3>
@@ -382,7 +364,6 @@ export default function MyWalletPage() {
                         </div>
                     </div>
 
-                    {/* --- CARD 3: LỊCH SỬ GIAO DỊCH --- */}
                     <div className="lg:col-span-2">
                         <div className="bg-white rounded-xl shadow">
                             <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'withdraw' | 'revenue')} className="w-full">
@@ -395,7 +376,6 @@ export default function MyWalletPage() {
                                     </TabsTrigger>
                                 </TabsList>
 
-                                {/* Tab Doanh thu */}
                                 <TabsContent value="revenue" className="p-6 space-y-4">
                                     <h3 className="font-semibold text-lg mb-4">Doanh thu từ học viên</h3>
                                     {wallet?.transactions && wallet.transactions.filter(t => t.transaction_type === 'Deposit').length > 0 ? (

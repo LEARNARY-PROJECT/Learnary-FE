@@ -49,7 +49,8 @@ interface Course {
   slug: string;
   thumbnail: string;
   price: number;
-  sale_off: boolean;
+  sale_off?: number;
+  hot: boolean;
   status: CourseStatus;
   createdAt: string;
   updatedAt: string;
@@ -75,7 +76,7 @@ export default function CoursePage() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState<CourseStatus | "ALL">("ALL");
-
+  const [hotLoadingId, setHotLoadingId] = useState<string | null>(null);
   // --- Fetch Data ---
   useEffect(() => {
     fetchCourses();
@@ -85,8 +86,8 @@ export default function CoursePage() {
     try {
       setLoading(true);
       // Đảm bảo API backend trả về đủ thông tin instructor và category
-      const response = await api.get("/courses");
-      const apiData = response.data;
+        const response = await api.get("/courses");
+        const apiData = response.data;
 
       if (apiData.success && Array.isArray(apiData.data)) {
         setCourses(apiData.data);
@@ -103,8 +104,21 @@ export default function CoursePage() {
     }
   };
 
+  // Reload đồng thời cập nhật hot cho top 10
   const reload = async (): Promise<void> => {
-    fetchCourses();
+    try {
+      setLoading(true);
+      // Gọi API cập nhật hot cho top 10 (giả sử có endpoint này)
+      await api.post("/courses/admin/update-hot");
+      // Sau khi cập nhật, reload lại danh sách
+      await fetchCourses();
+      toast.success("Đã cập nhật trạng thái khoá học!");
+    } catch (error) {
+      console.error("Lỗi tải khóa học:", error);
+      toast.error("Cập nhật trạng thái khoá học thất bại!");
+    } finally {
+      setLoading(false);
+    }
   }
   // --- Helpers ---
   const formatCurrency = (price: number) => {
@@ -261,12 +275,17 @@ export default function CoursePage() {
                         )}
                       </div>
                       <div className="space-y-1 max-w-[250px]">
-                        <p className="font-semibold text-gray-900 line-clamp-1" title={course.title}>{course.title}</p>
+                        <div className="flex items-center gap-2">
+                          <p className="font-semibold text-gray-900 line-clamp-1" title={course.title}>{course.title}</p>
+                          {course.hot && (
+                            <p className="bg-red-600 px-1 text-white font-bold rounded">hot</p>
+                          )}
+                        </div>
                         <div className="flex items-center gap-2 text-xs text-muted-foreground">
                           <span className="flex items-center gap-1 bg-slate-100 px-1.5 py-0.5 rounded">
                             <Tag className="h-3 w-3" /> {course.category?.category_name || "Chưa phân loại"}
                           </span>
-                          <span>{course._count?.learnerCourses || 0} học viên</span>
+                          <span>{course._count?.learnerCourses || 0} học viên</span>  
                         </div>
                       </div>
                     </div>
@@ -286,8 +305,15 @@ export default function CoursePage() {
                   </TableCell>
                   <TableCell>
                     <div className="flex flex-col">
-                      <span className="font-medium text-green-600">{formatCurrency(course.price)}</span>
-                      {course.sale_off && <span className="text-[10px] text-red-500 font-bold">GIẢM GIÁ</span>}
+                      {course.sale_off && course.sale_off > 0 ? (
+                        <>
+                          <span className="font-medium text-green-600 line-through opacity-70">{formatCurrency(course.price)}</span>
+                          <span className="font-bold text-green-700">{formatCurrency(course.price - (course.price * course.sale_off / 100))}</span>
+                          <span className="text-[10px] text-red-500 font-bold">Đã giảm {course.sale_off}%</span>
+                        </>
+                      ) : (
+                        <span className="font-medium text-green-600">{formatCurrency(course.price)}</span>
+                      )}
                     </div>
                   </TableCell>
                   <TableCell>
@@ -299,8 +325,7 @@ export default function CoursePage() {
                       {formatDate(course.createdAt)}
                     </div>
                   </TableCell>
-
-                  {/* Cột 6: Hành động */}
+                  {/* Bỏ cột HOT riêng, gộp vào dropdown menu */}
                   <TableCell className="text-right pr-4">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
@@ -317,6 +342,44 @@ export default function CoursePage() {
                         >
                           <Eye className="mr-2 h-4 w-4" /> Xem chi tiết
                         </DropdownMenuItem>
+                        {course.status === "Published" && (
+                          <DropdownMenuItem
+                            onClick={async () => {
+                              setHotLoadingId(course.course_id);
+                              setCourses(prev => prev.map(c =>
+                                c.course_id === course.course_id ? { ...c, hot: !course.hot } : c
+                              ));
+                              try {
+                                const res = await api.put(`/courses/admin/hot/${course.course_id}`, { hot: !course.hot });
+                                if (res.data.success) {
+                                  toast.success(`Đã cập nhật trạng thái hot cho khoá học!`);
+                                } else {
+                                  toast.error("Cập nhật hot thất bại!");
+                                  setCourses(prev => prev.map(c =>
+                                    c.course_id === course.course_id ? { ...c, hot: course.hot } : c
+                                  ));
+                                }
+                              } catch (error) {
+                                console.error("Error updating hot status:", error);
+                                toast.error("Lỗi khi cập nhật hot!");
+                                setCourses(prev => prev.map(c =>
+                                  c.course_id === course.course_id ? { ...c, hot: course.hot } : c
+                                ));
+                              } finally {
+                                setHotLoadingId(null);
+                              }
+                            }}
+                            className={course.hot ? "text-red-600 cursor-pointer" : "cursor-pointer"}
+                          >
+                            {hotLoadingId === course.course_id ? (
+                              <Spinner className="mr-2 h-4 w-4" />
+                            ) : course.hot ? (
+                              <span className="flex items-center"><Tag className="mr-2 h-4 w-4" /> Tắt Hot</span>
+                            ) : (
+                              <span className="flex items-center"><Tag className="mr-2 h-4 w-4" /> Bật Hot</span>
+                            )}
+                          </DropdownMenuItem>
+                        )}
                         <DropdownMenuItem className="text-red-600 cursor-pointer ">
                           <button onClick={() => handleDeleteCourse(course.course_id)} className="flex cursor-pointer justify-items-center items-center">
                             <Trash2 className="mr-2 h-4 w-4" /> Xóa khóa học
