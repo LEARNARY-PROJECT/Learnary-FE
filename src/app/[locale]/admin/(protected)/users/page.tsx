@@ -47,6 +47,8 @@ import {
 } from "@/components/ui/dialog"
 import { toast } from "sonner"
 import { UserRole } from '@/type/user.type';
+import { usePagination } from "@/hooks/usePagination";
+import { PaginationControls } from "@/components/PaginationControls";
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const UserSchema = z.object({
@@ -116,6 +118,7 @@ type User = z.infer<typeof UserSchema>;
 
 export default function UserManagement() {
    const [users, setUser] = useState<User[]>([]);
+   const [itemsPerPage, setItemsPerPage] = useState(10);
    const [isLoading, setIsLoading] = useState(true);
    const [searchTerm, setSearchTerm] = useState("");
    const [filterActive, setFilterActive] = useState<boolean | null>(null);
@@ -371,6 +374,21 @@ export default function UserManagement() {
       return matchSearch && matchActive;
    });
 
+   const {
+      paginatedData,
+      currentPage,
+      totalPages,
+      goToPage,
+      resetPage,
+      totalItems,
+      startItem,
+      endItem,
+   } = usePagination({ data: filteredUsers, itemsPerPage });
+
+   React.useEffect(() => {
+      resetPage();
+   }, [searchTerm, filterActive, resetPage]);
+
    const labeledRole: Record<UserRole, "destructive" | "outline" | "default"> = {
       ADMIN: "destructive",
       INSTRUCTOR: "default",
@@ -447,7 +465,7 @@ export default function UserManagement() {
                   </TableRow>
                </TableHeader>
                <TableBody>
-                  {filteredUsers.map((user) => (
+                  {paginatedData.map((user) => (
                      <TableRow key={user.user_id}>
                         <TableCell>
                            <div className="flex items-center gap-3">
@@ -551,6 +569,16 @@ export default function UserManagement() {
                   ))}
                </TableBody>
             </Table>
+            <PaginationControls
+               currentPage={currentPage}
+               totalPages={totalPages}
+               totalItems={totalItems}
+               startItem={startItem}
+               endItem={endItem}
+               itemsPerPage={itemsPerPage}
+               onPageChange={goToPage}
+               onItemsPerPageChange={setItemsPerPage}
+            />
          </div>
 
          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>

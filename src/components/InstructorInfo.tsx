@@ -34,25 +34,22 @@ export default function InstructorInfo({ instructor, isPreviewMode }: Instructor
       toast.error('Vui lòng đăng nhập để chat');
       return;
     }
-
     if (!instructor?.user?.user_id) {
       toast.error('Không tìm thấy thông tin instructor');
       return;
     }
-
-    if (currentUser?.id === instructor.user.user_id) {
-      toast.error('Bạn không thể chat với chính mình');
+    if (currentUser?.id === instructor.user.user_id.trim()) {
+      toast.warning('Bạn không thể chat với chính mình');
       return;
     }
-
     setIsLoadingChat(true);
     try {
       const response = await api.post('/conversations', {
         otherUserId: instructor.user.user_id
       });
       const conversationId = response.data.data.conversation_id;
+      toast.info('Chuyển đến trang chat...');
       router.push(`/chat?conversation=${conversationId}`);
-      toast.success('Đang chuyển đến trang chat...');
     } catch (error) {
       console.error('Error starting chat:', error);
       toast.error("Lỗi khi mở đoạn chat");
@@ -104,7 +101,7 @@ export default function InstructorInfo({ instructor, isPreviewMode }: Instructor
           <Button
             onClick={handleStartChat}
             disabled={isLoadingChat || isPreviewMode}
-            className="flex items-center gap-2"
+            className="flex items-center gap-2 bg-white text-pink-600 border hover:bg-white hover:border-pink-600 cursor-pointer"
           >
             <MessageCircle className="w-4 h-4" />
             {isLoadingChat ? 'Đang xử lý...' : 'Chat với Instructor'}

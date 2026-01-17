@@ -11,6 +11,8 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { CheckCircle, XCircle, AlertCircle } from "lucide-react";
+import { usePagination } from "@/hooks/usePagination";
+import { PaginationControls } from "@/components/PaginationControls";
 
 type WithdrawStatus = "Pending" | "Success" | "Rejected";
 type ActionType = 'APPROVE' | 'REJECT';
@@ -41,6 +43,7 @@ export default function WithdrawApprovalPage() {
   const [actionType, setActionType] = useState<ActionType | null>(null);
   const [adminNote, setAdminNote] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
   // Load danh sách Pending
   const fetchRequests = async () => {
@@ -62,6 +65,21 @@ export default function WithdrawApprovalPage() {
   useEffect(() => {
     fetchRequests();
   }, []);
+
+  const {
+    paginatedData,
+    currentPage,
+    totalPages,
+    goToPage,
+    resetPage,
+    totalItems,
+    startItem,
+    endItem,
+  } = usePagination({ data: requests, itemsPerPage });
+
+  React.useEffect(() => {
+    resetPage();
+  }, [requests.length, resetPage]);
 
   // Hàm xử lý khi Admin bấm xác nhận trong Modal
   const handleConfirmAction = async () => {
@@ -117,8 +135,8 @@ export default function WithdrawApprovalPage() {
           <TableBody>
             {loading ? (
               <TableRow><TableCell colSpan={5} className="text-center py-8">Đang tải...</TableCell></TableRow>
-            ) : requests.length > 0 ? (
-              requests.map((req) => (
+            ) : paginatedData.length > 0 ? (
+              paginatedData.map((req) => (
                 <TableRow key={req.withdraw_request_id}>
                   <TableCell>
                     <div className="font-medium">{req.belongUser?.fullName || 'N/A'}</div>
@@ -177,6 +195,18 @@ export default function WithdrawApprovalPage() {
             )}  
           </TableBody>
         </Table>
+        {!loading && paginatedData.length > 0 && (
+          <PaginationControls
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalItems={totalItems}
+            startItem={startItem}
+            endItem={endItem}
+            itemsPerPage={itemsPerPage}
+            onPageChange={goToPage}
+            onItemsPerPageChange={setItemsPerPage}
+          />
+        )}
       </div>
 
       {/* --- MODAL XÁC NHẬN --- */}

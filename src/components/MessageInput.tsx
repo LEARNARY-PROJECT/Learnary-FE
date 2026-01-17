@@ -94,7 +94,7 @@ export default function MessageInput({ onSendMessage, onTypingStart, onTypingSto
           onClick={handleSend}
           disabled={!message.trim() || isSending}
           size="icon"
-          className="shrink-0 h-11 w-11">
+          className="shrink-0 h-11 w-11 bg-pink-800">
           <Send className="h-4 w-4" />
         </Button>
       </div>

@@ -40,7 +40,8 @@ import { EditResourceTypeForm } from "@/components/EditResourceTypeForm";
 import { ResourceTypeDetailDialog } from "@/components/ResourceTypeDetailDialog";
 import { Spinner } from "@/components/ui/spinner";
 import { ToasterConfirm } from "@/components/ToasterConfimer";
-
+import { usePagination } from '@/hooks/usePagination';
+import { PaginationControls } from '@/components/PaginationControls';
 export default function ResourceTypesPage() {
   const [resourceTypes, setResourceTypes] = useState<ResourceTypeData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -53,7 +54,8 @@ export default function ResourceTypesPage() {
   const [detailDialog, setDetailDialog] = useState<{ open: boolean; resourceType: ResourceTypeData | null }>({
     open: false,
     resourceType: null
-  });  useEffect(() => {
+  });
+  const [itemsPerPage, setItemsPerPage] = useState(10);  useEffect(() => {
     fetchResourceTypes();
   }, []);
 
@@ -110,6 +112,21 @@ export default function ResourceTypesPage() {
   const filteredResourceTypes = resourceTypes.filter((resourceType) =>
     resourceType.resource_name.toLowerCase().includes(searchTerm.toLowerCase()) 
   );
+
+  const {
+    paginatedData,
+    currentPage,
+    totalPages,
+    goToPage,
+    resetPage,
+    totalItems,
+    startItem,
+    endItem,
+  } = usePagination({ data: filteredResourceTypes, itemsPerPage });
+
+  React.useEffect(() => {
+    resetPage();
+  }, [searchTerm, resetPage]);
 
   if (isLoading) {
     return (
@@ -176,7 +193,7 @@ export default function ResourceTypesPage() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredResourceTypes.map((resourceType) => (
+            {paginatedData.map((resourceType) => (
               <TableRow key={resourceType.resource_id}>
                 <TableCell>
                   <div className="flex items-center gap-3">
@@ -225,6 +242,16 @@ export default function ResourceTypesPage() {
             ))}
           </TableBody>
         </Table>
+        <PaginationControls
+          currentPage={currentPage}
+          totalPages={totalPages}
+          totalItems={totalItems}
+          startItem={startItem}
+          endItem={endItem}
+          itemsPerPage={itemsPerPage}
+          onPageChange={goToPage}
+          onItemsPerPageChange={setItemsPerPage}
+        />
       </div>
 
       {/* Edit Dialog */}

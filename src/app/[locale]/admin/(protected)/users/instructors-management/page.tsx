@@ -32,6 +32,8 @@ import {
   RefreshCcw,
   Clock
 } from "lucide-react";
+import { usePagination } from "@/hooks/usePagination";
+import { PaginationControls } from "@/components/PaginationControls";
 
 // Enum trạng thái
 enum VerifyStatus {
@@ -90,6 +92,7 @@ export default function InstructorManagement() {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterActive, setFilterActive] = useState<boolean | null>(null);
   const router = useRouter();
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
   useEffect(() => {
     fetchData();
@@ -188,6 +191,21 @@ export default function InstructorManagement() {
     return matchSearch;
   });
 
+  const {
+    paginatedData,
+    currentPage,
+    totalPages,
+    goToPage,
+    resetPage,
+    totalItems,
+    startItem,
+    endItem,
+  } = usePagination({ data: filteredData, itemsPerPage });
+
+  React.useEffect(() => {
+    resetPage();
+  }, [searchTerm, filterActive, resetPage]);
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -260,7 +278,7 @@ export default function InstructorManagement() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredData.map((item) => (
+            {paginatedData.map((item) => (
 
               <TableRow key={item.id}>
                 <TableCell>
@@ -385,6 +403,16 @@ export default function InstructorManagement() {
             ))}
           </TableBody>
         </Table>
+        <PaginationControls
+          currentPage={currentPage}
+          totalPages={totalPages}
+          totalItems={totalItems}
+          startItem={startItem}
+          endItem={endItem}
+          itemsPerPage={itemsPerPage}
+          onPageChange={goToPage}
+          onItemsPerPageChange={setItemsPerPage}
+        />
       </div>
     </div>
   );

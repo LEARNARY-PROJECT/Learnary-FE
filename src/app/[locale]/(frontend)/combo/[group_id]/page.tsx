@@ -20,6 +20,7 @@ import { QRCodeCanvas } from 'qrcode.react';
 export default function ComboDetailPage() {
     const params = useParams();
     const router = useRouter();
+    const locale = params?.locale as string || 'vi';
     const group_id = params?.group_id as string;
     const isMobile = useIsMobile();
     const { user, isLoggedIn } = useAuth();
@@ -71,7 +72,7 @@ export default function ComboDetailPage() {
                     setShowQRDialog(false);
                     toast.success('Thanh toán thành công!');
                     clearInterval(interval);
-                    router.push('/learn-area');
+                    router.push(`/${locale}/learn-area`);
                 }
                 if (res.data.status === 'Cancel') {
                     setShowQRDialog(false);
@@ -83,7 +84,7 @@ export default function ComboDetailPage() {
             }
         }, 3000);
         return () => clearInterval(interval);
-    }, [orderCode, showQRDialog, router]);
+    }, [orderCode, showQRDialog, router, locale]);
     useEffect(() => {
         const fetchComboData = async () => {
             setIsLoading(true);
@@ -110,7 +111,7 @@ export default function ComboDetailPage() {
     const handleBuyNow = async () => {
         if (!isLoggedIn || !user?.id) {
             toast.error("Vui lòng đăng nhập để mua combo!");
-            router.push('/login');
+            router.push(`/${locale}/login`);
             return;
         }
 

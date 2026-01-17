@@ -51,6 +51,8 @@ export default function FrontendLayout({
     );
   }
 
+  const showFooter = !pathname?.includes('/chat');
+
   return (
     <div className="min-h-screen flex flex-col">
       {accountStatus?.status === 'Locked' && (
@@ -74,7 +76,7 @@ export default function FrontendLayout({
           </main>
         </NavbarWrapper>
       </div>
-      <Footer />
+      {showFooter && <Footer />}
     </div>
   );
 }

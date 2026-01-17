@@ -44,6 +44,8 @@ import CreateAdminForm from "@/components/CreateAdminForm";
 import { EditAdminAccountForm } from "@/components/EditAdminAccountForm";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from '@/app/context/AuthContext';
+import { usePagination } from "@/hooks/usePagination";
+import { PaginationControls } from "@/components/PaginationControls";
 
 type SortOrder = 'asc' | 'desc' | null;
 
@@ -59,6 +61,7 @@ export default function AdminAccountManagement() {
     open: false,
     admin: null,
   });
+  const [itemsPerPage, setItemsPerPage] = useState(10);
   const getCurrentAdmin = useCallback(async () => {
     const res = await api.get(`/admins/getAdminByUserId/${currentUser?.id}`)
     if (!res) {
@@ -167,6 +170,21 @@ export default function AdminAccountManagement() {
     return filtered;
   }, [admins, searchTerm, sortOrder,currentAdmin]);
 
+  const {
+    paginatedData,
+    currentPage,
+    totalPages,
+    goToPage,
+    resetPage,
+    totalItems,
+    startItem,
+    endItem,
+  } = usePagination({ data: filteredAndSortedAdmins, itemsPerPage });
+
+  React.useEffect(() => {
+    resetPage();
+  }, [searchTerm, sortOrder, resetPage]);
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -246,7 +264,7 @@ export default function AdminAccountManagement() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredAndSortedAdmins.map((admin) => (
+            {paginatedData.map((admin) => (
               <TableRow key={admin.admin_id}>
                 <TableCell>
                   <div className="flex items-center gap-3">
@@ -317,6 +335,16 @@ export default function AdminAccountManagement() {
             ))}
           </TableBody>
         </Table>
+        <PaginationControls
+          currentPage={currentPage}
+          totalPages={totalPages}
+          totalItems={totalItems}
+          startItem={startItem}
+          endItem={endItem}
+          itemsPerPage={itemsPerPage}
+          onPageChange={goToPage}
+          onItemsPerPageChange={setItemsPerPage}
+        />
       </div>
 
       {/* Edit Dialog */}

@@ -1,7 +1,7 @@
   'use client';
 
   import { useState, useEffect } from 'react';
-  import { useRouter } from 'next/navigation';
+  import { useRouter, useParams } from 'next/navigation';
   import { useAuth } from "@/app/context/AuthContext";
   import { Button } from '@/components/ui/button';
   import { Input } from '@/components/ui/input';
@@ -20,6 +20,8 @@
 
   export default function CreateCoursePage() {
     const router = useRouter();
+    const params = useParams();
+    const locale = params?.locale as string || 'vi';
     const { user, isLoggedIn, isLoading: isAuthLoading } = useAuth();
     const [isLoading, setIsLoading] = useState(false);
     const [isInitializing, setIsInitializing] = useState(true);
@@ -41,7 +43,7 @@
 
       if (!isLoggedIn || user?.role !== "INSTRUCTOR" && user?.role !=="ADMIN") {
         toast.error('Truy cập thất bại!');
-        router.push(`/`); 
+        router.push(`/${locale}`);
         return;
       }
       const initData = async () => {
@@ -64,7 +66,7 @@
         finally { setIsInitializing(false); }
       };
       initData();
-    }, [isAuthLoading, isLoggedIn, user, router]);
+    }, [isAuthLoading, isLoggedIn, user, router, locale]);
 
     useEffect(() => {
       setFormData(prev => ({ ...prev, slug: slugify(prev.title) }));
@@ -97,14 +99,19 @@
         const courseId = res.data?.data?.course_id || res.data?.course_id || res.data?.id;
         if (courseId) { 
           toast.success("Tạo khóa học thành công!");
-          // Chuyển hướng
-          router.push(`/instructor/edit-course/${courseId}`);
+          router.push(`/${locale}/instructor/edit-course/${courseId}`);
         } else {
           throw new Error("Không tìm thấy Course ID trong phản hồi");
         }
       } catch (err) {
-        if (isAxiosError(err)) setError(err.response?.data?.message || 'Tạo khóa học thất bại');
-        else setError('Lỗi không xác định');
+        if (isAxiosError(err)) {
+          const errorMessage = err.response?.data?.error || err.response?.data?.message || 'Tạo khóa học thất bại';
+          setError(errorMessage);
+          toast.error(errorMessage);
+        } else {
+          setError('Lỗi không xác định');
+          toast.error('Lỗi không xác định');
+        }
         setIsLoading(false);
       }
     };
