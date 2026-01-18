@@ -148,8 +148,10 @@ export default function ProfilePage() {
       const birthDate = new Date(formData.dateOfBirth);
       const today = new Date();
       const age = today.getFullYear() - birthDate.getFullYear();
-      if (age < 13) newErrors.dateOfBirth = "Bạn phải ít nhất 13 tuổi";
-      toast.warning("Bạn phải trên 13 tuổi!")
+      if (age < 13){
+        newErrors.dateOfBirth = "Bạn phải ít nhất 13 tuổi";
+        toast.warning("Bạn phải trên 13 tuổi!");
+      }
     }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
