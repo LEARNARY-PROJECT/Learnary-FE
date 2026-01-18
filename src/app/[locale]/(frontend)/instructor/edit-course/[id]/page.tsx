@@ -144,6 +144,7 @@ export default function EditCoursePage({ params }: { params: Promise<{ id: strin
             }
         };
         fetchData();
+
     }, [courseId, user, isAuthLoading, isLoggedIn, router]);
 
     // Cảnh báo khi rời trang mà chưa lưu
@@ -326,16 +327,18 @@ export default function EditCoursePage({ params }: { params: Promise<{ id: strin
 
     const allRequiredFieldsFilled = useMemo(() => {
         if (!course) return false;
+        const finalPrice = discountPercent > 0 ? discountedPrice : course.price;
         return (
             course.title.trim() !== '' &&
             course.category_id.trim() !== '' &&
             course.level_id.trim() !== '' &&
             course.price >= 10000 &&
+            finalPrice >= 10000 &&
             course.thumbnail.trim() !== '' &&
             course.requirement.trim() !== '' &&
             course.description.trim() !== ''
         );
-    }, [course]);
+    }, [course, discountPercent, discountedPrice]);
 
     const canSaveDraft = !hasAnyVideo && course?.status === 'Draft';
     // Cho phép gửi duyệt lại nếu bị từ chối (Archived) hoặc là bản nháp (Draft)
@@ -371,6 +374,8 @@ export default function EditCoursePage({ params }: { params: Promise<{ id: strin
                     if (!allRequiredFieldsFilled) {
                         if (course.price > 0 && course.price < 10000) {
                             toast.error("Giá khóa học phải từ 10.000 VNĐ trở lên");
+                        } else if (discountPercent > 0 && discountedPrice < 10000) {
+                            toast.error("Giá sau khi giảm phải từ 10.000 VNĐ trở lên. Vui lòng điều chỉnh % giảm giá hoặc giá gốc.");
                         } else {
                             toast.error("Vui lòng điền đầy đủ tất cả thông tin bắt buộc (có dấu *)");
                         }
@@ -628,25 +633,29 @@ export default function EditCoursePage({ params }: { params: Promise<{ id: strin
                                     <Label className='text-blue-700 font-roboto-condensed-bold'>% Giảm giá</Label>
                                 </div>
                                 <Input
-                                    type="number"
-                                    min={0}
-                                    max={100}
-                                    step={10}
-                                    value={discountPercent}
+                                    type="text"
+                                    value={discountPercent === 0 ? '' : discountPercent.toString()}
                                     onChange={e => {
                                         const val = e.target.value;
+                                        // Cho phép xóa hết
                                         if (val === '') {
                                             setDiscountPercent(0);
                                             updateCourseState(d => { d.sale_off = 0; });
                                             return;
                                         }
+                                        
+                                        // Chỉ cho phép nhập số
+                                        if (!/^\d+$/.test(val)) {
+                                            return;
+                                        }
+                                        
                                         let num = parseInt(val, 10);
                                         if (isNaN(num) || num < 0) num = 0;
                                         if (num > 100) num = 100;
                                         setDiscountPercent(num);
                                         updateCourseState(d => { d.sale_off = num; });
                                     }}
-                                    placeholder="0"
+                                    placeholder="0 - 100"
                                     
                                 />
                             </div>
@@ -659,7 +668,11 @@ export default function EditCoursePage({ params }: { params: Promise<{ id: strin
                                     type="text"
                                     value={formatNumberWithDots(discountedPrice)}
                                     disabled
+                                    className={discountPercent > 0 && discountedPrice < 10000 ? 'border-red-500' : ''}
                                 />
+                                {discountPercent > 0 && discountedPrice < 10000 && (
+                                    <p className="text-red-500 text-sm mt-1">Giá sau khi giảm phải từ 10.000 VNĐ trở lên. Vui lòng giảm % giảm giá hoặc tăng giá gốc.</p>
+                                )}
                             </div>
                             <div className="space-y-2">
                                 <div className='flex gap-1'>
