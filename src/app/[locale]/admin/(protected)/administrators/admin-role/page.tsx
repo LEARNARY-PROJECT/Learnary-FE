@@ -42,6 +42,8 @@ import { AdminRoleDetailDialog } from "@/components/AdminRoleDetailDialog";
 import { Spinner } from "@/components/ui/spinner";
 import { ToasterConfirm } from "@/components/ToasterConfimer";
 import { Badge } from '@/components/ui/badge';
+import { usePagination } from "@/hooks/usePagination";
+import { PaginationControls } from "@/components/PaginationControls";
 
 const getUniqueResourcesFromRole = (role: AdminRoleWithPermissions): string[] => {
   if (!role.permissions || role.permissions.length === 0) {
@@ -62,6 +64,7 @@ export default function AdminRolePage() {
   const [open, setOpen] = useState(false);
   const [editDialog, setEditDialog] = useState<{ open: boolean; adminRole: AdminRoleWithPermissions | null }>({ open: false, adminRole: null });
   const [detailDialog, setDetailDialog] = useState<{ open: boolean; adminRole: AdminRoleWithPermissions | null }>({ open: false, adminRole: null });
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
   useEffect(() => {
     fetchAdminRoles();
@@ -120,7 +123,20 @@ export default function AdminRolePage() {
   const filteredAdminRoles = adminRoles.filter((role) =>
     role.role_name.toLowerCase().includes(searchTerm.toLowerCase()),
   );
+  const {
+    paginatedData,
+    currentPage,
+    totalPages,
+    goToPage,
+    resetPage,
+    totalItems,
+    startItem,
+    endItem,
+  } = usePagination({ data: filteredAdminRoles, itemsPerPage });
 
+  React.useEffect(() => {
+    resetPage();
+  }, [searchTerm, resetPage]);
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -193,7 +209,7 @@ export default function AdminRolePage() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredAdminRoles.map((role) => (
+            {paginatedData.map((role) => (
               <TableRow key={role.admin_role_id}>
                 <TableCell>
                   <div className="flex items-center gap-3">
@@ -274,6 +290,16 @@ export default function AdminRolePage() {
             ))}
           </TableBody>
         </Table>
+        <PaginationControls
+          currentPage={currentPage}
+          totalPages={totalPages}
+          totalItems={totalItems}
+          startItem={startItem}
+          endItem={endItem}
+          itemsPerPage={itemsPerPage}
+          onPageChange={goToPage}
+          onItemsPerPageChange={setItemsPerPage}
+        />
       </div>
 
       <Dialog open={editDialog.open} onOpenChange={(open) => setEditDialog(s => ({ ...s, open }))}>

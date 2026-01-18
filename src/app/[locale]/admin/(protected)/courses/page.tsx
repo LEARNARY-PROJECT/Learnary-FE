@@ -6,6 +6,8 @@ import Image from "next/image";
 import api from "@/app/lib/axios";
 import { Spinner } from "@/components/ui/spinner";
 import { toast } from "sonner";
+import { usePagination } from "@/hooks/usePagination";
+import { PaginationControls } from "@/components/PaginationControls";
 
 // UI Components
 import {
@@ -76,6 +78,7 @@ export default function CoursePage() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState<CourseStatus | "ALL">("ALL");
+  const [itemsPerPage, setItemsPerPage] = useState(10);
   const [hotLoadingId, setHotLoadingId] = useState<string | null>(null);
   // --- Fetch Data ---
   useEffect(() => {
@@ -174,6 +177,21 @@ export default function CoursePage() {
     return matchesSearch && matchesStatus;
   });
 
+  const {
+    paginatedData,
+    currentPage,
+    totalPages,
+    goToPage,
+    resetPage,
+    totalItems,
+    startItem,
+    endItem,
+  } = usePagination({ data: filteredCourses, itemsPerPage });
+  
+  React.useEffect(() => {
+    resetPage();
+  }, [searchTerm, filterStatus, resetPage]);
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -262,8 +280,8 @@ export default function CoursePage() {
             </TableRow>
           </TableHeader>  
           <TableBody>
-            {filteredCourses.length > 0 ? (
-              filteredCourses.map((course) => (
+            {paginatedData.length > 0 ? (
+              paginatedData.map((course) => (
                 <TableRow key={course.course_id}>
                   <TableCell className="pl-4 py-3">
                     <div className="flex items-center gap-3">
@@ -399,6 +417,18 @@ export default function CoursePage() {
             )}
           </TableBody>
         </Table>
+
+        {/* phân trang */}
+        <PaginationControls
+          currentPage={currentPage}
+          totalPages={totalPages}
+          totalItems={totalItems}
+          startItem={startItem}
+          endItem={endItem}
+          itemsPerPage={itemsPerPage}
+          onPageChange={goToPage}
+          onItemsPerPageChange={setItemsPerPage}
+        />
       </div>
     </div>
   );

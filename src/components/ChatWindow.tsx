@@ -33,13 +33,24 @@ export default function ChatWindow({
 }: ChatWindowProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
+  const previousMessagesLengthRef = useRef(messages.length);
 
   useEffect(() => {
-    if (messagesEndRef.current) {
-  /*     messagesEndRef.current.scrollIntoView({ behavior: "auto" }); */
+    if (!messagesEndRef.current || !messagesContainerRef.current) return;
+    const container = messagesContainerRef.current;
+    const isAtBottom = 
+      container.scrollHeight - container.scrollTop - container.clientHeight < 100;
+    
+    const hasNewMessage = messages.length > previousMessagesLengthRef.current;
+    const lastMessage = messages[messages.length - 1];
+    const isOwnMessage = lastMessage?.sender_id === currentUserId;
+
+    if (hasNewMessage && (isAtBottom || isOwnMessage)) {
       messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
     }
-  }, [messages]);
+
+    previousMessagesLengthRef.current = messages.length;
+  }, [messages, currentUserId]);
 
   const formatMessageTime = (dateString: string) => {
     try {
@@ -92,7 +103,7 @@ export default function ChatWindow({
         {messages.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full">
             <MessageCircle className="h-16 w-16 text-gray-300 mb-2" />
-            <p className="text-gray-500">Bắt đầu nhắn tin ngay</p>
+            <p className="text-gray-500">Chọn người để gửi tin nhắn ngay tại đây</p>
           </div>
         ) : (
           messages.map((message) => {

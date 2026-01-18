@@ -39,6 +39,8 @@ import { EditLevelForm } from "@/components/EditLevelForm";
 import { ToasterConfirm } from "@/components/ToasterConfimer";
 import { toast } from "sonner";
 import { Spinner } from "@/components/ui/spinner";
+import { usePagination } from "@/hooks/usePagination";
+import { PaginationControls } from "@/components/PaginationControls";
 import { Badge } from "@/components/ui/badge";
 
 type Level = {
@@ -55,6 +57,7 @@ export default function LevelsPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [open, setOpen] = useState(false);
   const [editDialog, setEditDialog] = useState<{ open: boolean; level: Level | null }>({ open: false, level: null });
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
   useEffect(() => {
     fetchLevels();
@@ -125,6 +128,21 @@ export default function LevelsPage() {
     level.level_name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const {
+    paginatedData,
+    currentPage,
+    totalPages,
+    goToPage,
+    resetPage,
+    totalItems,
+    startItem,
+    endItem,
+  } = usePagination({ data: filteredLevels, itemsPerPage });
+
+  React.useEffect(() => {
+    resetPage();
+  }, [searchTerm, resetPage]);
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -193,7 +211,7 @@ export default function LevelsPage() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredLevels.map((level) => (
+            {paginatedData.map((level) => (
               <TableRow key={level.level_id}>
                 <TableCell>
                   <div className="flex items-center gap-3">
@@ -259,6 +277,16 @@ export default function LevelsPage() {
             ))}
           </TableBody>
         </Table>
+        <PaginationControls
+          currentPage={currentPage}
+          totalPages={totalPages}
+          totalItems={totalItems}
+          startItem={startItem}
+          endItem={endItem}
+          itemsPerPage={itemsPerPage}
+          onPageChange={goToPage}
+          onItemsPerPageChange={setItemsPerPage}
+        />
       </div>
       {/* Dialog sửa cấp độ */}
       <Dialog open={editDialog.open} onOpenChange={(open) => setEditDialog(s => ({ ...s, open }))}>

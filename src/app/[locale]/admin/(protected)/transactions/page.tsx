@@ -12,6 +12,8 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
 import { Search, RefreshCw, ArrowUpRight, ArrowDownRight } from "lucide-react";
+import { usePagination } from "@/hooks/usePagination";
+import { PaginationControls } from "@/components/PaginationControls";
 
 type TransactionStatus = "Pending" | "Success" | "Cancel" | "Refund";
 type TransactionType = "Withdraw" | "Deposit" | "Pay" | "Refund";
@@ -48,6 +50,7 @@ export default function AllTransactionsPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("ALL");
   const [typeFilter, setTypeFilter] = useState<TypeFilter>("ALL");
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
   const fetchTransactions = async () => {
     try {
@@ -85,6 +88,21 @@ export default function AllTransactionsPage() {
 
     return matchSearch && matchStatus && matchType;
   });
+
+  const {
+    paginatedData,
+    currentPage,
+    totalPages,
+    goToPage,
+    resetPage,
+    totalItems,
+    startItem,
+    endItem,
+  } = usePagination({ data: filteredData, itemsPerPage });
+
+  React.useEffect(() => {
+    resetPage();
+  }, [searchTerm, statusFilter, typeFilter, resetPage]);
 
   // --- Helpers ---
   const formatCurrency = (val: number) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(Number(val));
@@ -178,8 +196,8 @@ export default function AllTransactionsPage() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredData.length > 0 ? (
-              filteredData.map((t) => (
+            {paginatedData.length > 0 ? (
+              paginatedData.map((t) => (
                 <TableRow key={t.transaction_id}>
                   <TableCell className="font-mono text-xs">{t.payment_code?.toString()}</TableCell>
                   <TableCell>
@@ -209,6 +227,16 @@ export default function AllTransactionsPage() {
             )}
           </TableBody>
         </Table>
+        <PaginationControls
+          currentPage={currentPage}
+          totalPages={totalPages}
+          totalItems={totalItems}
+          startItem={startItem}
+          endItem={endItem}
+          itemsPerPage={itemsPerPage}
+          onPageChange={goToPage}
+          onItemsPerPageChange={setItemsPerPage}
+        />
       </div>
     </div>
   );

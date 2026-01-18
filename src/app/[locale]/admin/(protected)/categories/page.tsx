@@ -39,6 +39,8 @@ import { EditCategoryForm } from "@/components/EditCategoryForm";
 import { ToasterConfirm } from "@/components/ToasterConfimer";
 import { toast } from "sonner";
 import { Spinner } from "@/components/ui/spinner";
+import { usePagination } from "@/hooks/usePagination";
+import { PaginationControls } from "@/components/PaginationControls";
 
 type Category = {
   category_id: string,
@@ -55,6 +57,7 @@ export default function CategoriesPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [open, setOpen] = useState(false);
   const [editDialog, setEditDialog] = useState<{ open: boolean; category: Category | null }>({ open: false, category: null });
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
   useEffect(() => {
     fetchCategories();
@@ -122,6 +125,21 @@ export default function CategoriesPage() {
     category.category_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     category.slug.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const {
+    paginatedData,
+    currentPage,
+    totalPages,
+    goToPage,
+    resetPage,
+    totalItems,
+    startItem,
+    endItem,
+  } = usePagination({ data: filteredCategories, itemsPerPage });
+
+  React.useEffect(() => {
+    resetPage();
+  }, [searchTerm, resetPage]);
 
   if (isLoading) {
     return (
@@ -192,7 +210,7 @@ export default function CategoriesPage() {
           </TableHeader>
           <TableBody>
 
-            {filteredCategories.map((category) => (
+            {paginatedData.map((category) => (
               <TableRow key={category.category_id}>
                 <TableCell>
                   <div className="flex items-center gap-3">
@@ -258,6 +276,16 @@ export default function CategoriesPage() {
             ))}
           </TableBody>
         </Table>
+        <PaginationControls
+          currentPage={currentPage}
+          totalPages={totalPages}
+          totalItems={totalItems}
+          startItem={startItem}
+          endItem={endItem}
+          itemsPerPage={itemsPerPage}
+          onPageChange={goToPage}
+          onItemsPerPageChange={setItemsPerPage}
+        />
       </div>
       {/* Dialog sửa danh mục */}
       <Dialog open={editDialog.open} onOpenChange={(open) => setEditDialog(s => ({ ...s, open }))}>

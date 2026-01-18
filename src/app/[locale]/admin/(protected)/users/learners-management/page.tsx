@@ -34,6 +34,8 @@ import {
   UserX
 } from "lucide-react";
 import { toast } from "sonner";
+import { usePagination } from "@/hooks/usePagination";
+import { PaginationControls } from "@/components/PaginationControls";
 
 interface LearnerResponse {
   learner_id: string;
@@ -70,6 +72,7 @@ export default function LearnerManagement() {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterActive, setFilterActive] = useState<boolean | null>(null);
   const router = useRouter();
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
   useEffect(() => {
     fetchLearners();
@@ -138,6 +141,21 @@ export default function LearnerManagement() {
     if (filterActive === null) return matchesSearch;
     return matchesSearch && learner.isActive === filterActive;
   });
+
+  const {
+    paginatedData,
+    currentPage,
+    totalPages,
+    goToPage,
+    resetPage,
+    totalItems,
+    startItem,
+    endItem,
+  } = usePagination({ data: filteredLearners, itemsPerPage });
+
+  React.useEffect(() => {
+    resetPage();
+  }, [searchTerm, filterActive, resetPage]);
 
   if (isLoading) {
     return (
@@ -212,8 +230,8 @@ export default function LearnerManagement() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredLearners.length > 0 ? (
-              filteredLearners.map((learner) => (
+            {paginatedData.length > 0 ? (
+              paginatedData.map((learner) => (
                 <TableRow key={learner.learner_id}>
                   <TableCell>
                     <div className="flex items-center gap-3">
@@ -323,6 +341,16 @@ export default function LearnerManagement() {
             )}
           </TableBody>
         </Table>
+        <PaginationControls
+          currentPage={currentPage}
+          totalPages={totalPages}
+          totalItems={totalItems}
+          startItem={startItem}
+          endItem={endItem}
+          itemsPerPage={itemsPerPage}
+          onPageChange={goToPage}
+          onItemsPerPageChange={setItemsPerPage}
+        />
       </div>
     </div>
   );

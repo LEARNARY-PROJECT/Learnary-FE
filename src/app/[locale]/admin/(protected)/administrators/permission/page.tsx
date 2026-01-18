@@ -37,6 +37,8 @@ import { EditPermissionForm } from '@/components/EditPermissionForm';
 import { ToasterConfirm } from "@/components/ToasterConfimer";
 import { toast } from "sonner";
 import { Spinner } from "@/components/ui/spinner";
+import { usePagination } from "@/hooks/usePagination";
+import { PaginationControls } from "@/components/PaginationControls";
 import { Permission } from '@/type/administrator.type';
 import { CreatePermissionForm } from '@/components/CreatePermissionForm';
 import { PermissionDetailDialog } from '@/components/PermissionDetailDialog';
@@ -48,6 +50,7 @@ export default function PermissionsPage() {
   const [open, setOpen] = useState(false);
   const [editDialog, setEditDialog] = useState<{ open: boolean; permission: Permission | null }>({ open: false, permission: null });
   const [detailDialog, setDetailDialog] = useState<{ open: boolean; permission: Permission | null }>({ open: false, permission: null });
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
   useEffect(() => {
     fetchPermission();
@@ -107,6 +110,21 @@ export default function PermissionsPage() {
   const filteredPermissions = permissions.filter((permission) =>
     permission.permission_name.toLowerCase().includes(searchTerm.toLowerCase()) 
   );
+
+  const {
+    paginatedData,
+    currentPage,
+    totalPages,
+    goToPage,
+    resetPage,
+    totalItems,
+    startItem,
+    endItem,
+  } = usePagination({ data: filteredPermissions, itemsPerPage });
+
+  React.useEffect(() => {
+    resetPage();
+  }, [searchTerm, resetPage]);
 
   if (isLoading) {
     return (
@@ -170,7 +188,7 @@ export default function PermissionsPage() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredPermissions.map((permission) => (
+            {paginatedData.map((permission) => (
               <TableRow key={permission.permission_id}>
                 <TableCell>
                   <div className="flex items-center gap-3">
@@ -217,6 +235,16 @@ export default function PermissionsPage() {
             ))}
           </TableBody>
         </Table>
+        <PaginationControls
+          currentPage={currentPage}
+          totalPages={totalPages}
+          totalItems={totalItems}
+          startItem={startItem}
+          endItem={endItem}
+          itemsPerPage={itemsPerPage}
+          onPageChange={goToPage}
+          onItemsPerPageChange={setItemsPerPage}
+        />
       </div>
       {/* Edit Dialog */}
       <Dialog open={editDialog.open} onOpenChange={(open) => setEditDialog(s => ({ ...s, open }))}>

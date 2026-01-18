@@ -203,7 +203,7 @@ function Navbar() {
                 <NavigationMenuList>
                   <NavigationMenuItem>
                     <NavigationMenuTrigger className="font-ruda text-md hover:font-ruda-bold hover:text-lg cursor-pointer ">
-                      Về chúng tôi
+                      {t("support")}
                     </NavigationMenuTrigger>
                     <NavigationMenuContent>
                       <ul className="grid w-[400px] gap-3 p-4">

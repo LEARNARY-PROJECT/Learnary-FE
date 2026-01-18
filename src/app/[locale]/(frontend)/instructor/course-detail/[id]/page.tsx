@@ -248,8 +248,7 @@ export default function CourseDetailPage() {
               created_by={course.created_by || course.instructor?.user?.fullName || "Giảng viên"}
               last_updated={formattedLastUpdated}
               available_language={course.available_language || "Tiếng Việt"}
-              level_name={levelName}
-            />
+              level_name={levelName} hot={false}            />
 
             <div className="max-w-7xl mx-auto mt-8">
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -283,10 +282,9 @@ export default function CourseDetailPage() {
                       thumbnail={course.thumbnail}
                       price={course.price}
                       discounted_price={course.price || 0}
-                      sale_off={course.sale_off || 0}  
+                      sale_off={course.sale_off || 0}
                       includes={mappedIncludes}
-                      isPreviewMode={true}
-                    />
+                      isPreviewMode={true} hot={false}                    />
                   </div>
                 </div>
               </div>

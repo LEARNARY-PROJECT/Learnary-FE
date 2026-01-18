@@ -330,7 +330,7 @@ const CourseListWithFilters: React.FC = () => {
                     <h2 className="text-2xl font-roboto-condensed-bold mb-6 border-b-2 border-pink-600 pb-2 inline-block">
                       {group.category.category_name}
                     </h2>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
                       {showCourses.map((course) => (
                         <div key={course.course_id} className={`${isMobile ? 'sm:w-1/2 lg:w-1/4' : ' sm:w-1/2 lg:w-1/4'}`}>
                           <SingleCourseCard course={course} />
