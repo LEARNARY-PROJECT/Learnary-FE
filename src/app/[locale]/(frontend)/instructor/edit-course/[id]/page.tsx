@@ -330,7 +330,7 @@ export default function EditCoursePage({ params }: { params: Promise<{ id: strin
             course.title.trim() !== '' &&
             course.category_id.trim() !== '' &&
             course.level_id.trim() !== '' &&
-            course.price > 0 &&
+            course.price >= 10000 &&
             course.thumbnail.trim() !== '' &&
             course.requirement.trim() !== '' &&
             course.description.trim() !== ''
@@ -369,7 +369,11 @@ export default function EditCoursePage({ params }: { params: Promise<{ id: strin
             } else {
                 if (!canSubmit) {
                     if (!allRequiredFieldsFilled) {
-                        toast.error("Vui lòng điền đầy đủ tất cả thông tin bắt buộc (có dấu *)");
+                        if (course.price > 0 && course.price < 10000) {
+                            toast.error("Giá khóa học phải từ 10.000 VNĐ trở lên");
+                        } else {
+                            toast.error("Vui lòng điền đầy đủ tất cả thông tin bắt buộc (có dấu *)");
+                        }
                         return;
                     }
                     if (!allChaptersHaveLessons) {
@@ -611,8 +615,12 @@ export default function EditCoursePage({ params }: { params: Promise<{ id: strin
                                             setPriceDisplay(rawValue === '' ? '' : formatNumberWithDots(numValue));
                                         }
                                     }}
-                                    placeholder="0"
+                                    placeholder="Tối thiểu 10.000 VNĐ"
+                                    className={course.price > 0 && course.price < 10000 ? 'border-red-500' : ''}
                                 />
+                                {course.price > 0 && course.price < 10000 && (
+                                    <p className="text-red-500 text-sm mt-1">Giá khóa học phải từ 10.000 VNĐ trở lên</p>
+                                )}
                             </div>
                             {/* % Giảm giá */}
                             <div className="space-y-2 mt-2">
