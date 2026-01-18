@@ -170,7 +170,7 @@ function CourseCard({
     const updatedAt = new Date(course.updatedAt);
     const now = new Date();
     const diffMs = now.getTime() - updatedAt.getTime();
-    const diffDays = diffMs / (1000 * 60 * 60 * 24 * 3);
+    const diffDays = diffMs / (1000 * 60 * 60 * 24 * 7);
     if (diffDays > 3) {
       canEdit = false;
     } else {

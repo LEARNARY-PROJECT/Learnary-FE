@@ -16,7 +16,7 @@ interface CoursesByCategory {
   courses: Course[];
 }
 
-type DisplayType = "all" | "courses" | "combos";
+type DisplayType = "all" | "courses" | "combos" | "hot";
 
 const fetchListCourses = async (): Promise<Course[]> => {
   try {
@@ -146,7 +146,7 @@ const CourseListWithFilters: React.FC = () => {
   }, []);
 
   const filteredCourses = useMemo(() => {
-    const filtered = coursesData.filter((course) => {
+    let filtered = coursesData.filter((course) => {
       const matchesSearch = course.title
         ?.toLowerCase()
         .includes(searchTerm.toLowerCase());
@@ -165,9 +165,11 @@ const CourseListWithFilters: React.FC = () => {
 
       return matchesSearch && matchesPrice && matchesCategory && matchesLevel;
     });
-    
+    if (displayType === "hot") {
+      filtered = filtered.filter(course => course.hot === true);
+    }
     return filtered;
-  }, [coursesData, searchTerm, minPrice, maxPrice, selectedCategory, selectedLevel]);
+  }, [coursesData, searchTerm, minPrice, maxPrice, selectedCategory, selectedLevel, displayType]);
 
   const filteredCombos = useMemo(() => {
     return combosData.filter((combo) => {
@@ -298,10 +300,21 @@ const CourseListWithFilters: React.FC = () => {
         >
           Combo
         </Button>
+        <Button
+          variant={displayType === "hot" ? "default" : "outline"}
+          onClick={() => setDisplayType("hot")}
+          className={displayType === "hot" ? "bg-pink-600 hover:bg-pink-700 cursor-pointer" : "cursor-pointer"}
+        >
+          Hot
+        </Button>
       </div>
       {displayType !== "combos" && (
         <>
-          {coursesByCategory.length === 0 ? (
+          {displayType === "hot" && filteredCourses.length === 0 ? (
+            <div className="flex items-center justify-center w-full py-20">
+              <p className="text-gray-500 text-lg">Không tìm thấy khóa học hot nào phù hợp</p>
+            </div>
+          ) : coursesByCategory.length === 0 ? (
             displayType === "courses" ? (
               <div className="flex items-center justify-center w-full py-20">
                 <p className="text-gray-500 text-lg">Không tìm thấy khóa học nào phù hợp</p>
