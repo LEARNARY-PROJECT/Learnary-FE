@@ -125,7 +125,7 @@ export default function EditCoursePage({ params }: { params: Promise<{ id: strin
                     const updatedAt = new Date(courseData.updatedAt);
                     const now = new Date();
                     const diffMs = now.getTime() - updatedAt.getTime();
-                    const diffDays = diffMs / (1000 * 60 * 60 * 24 * 3);
+                    const diffDays = diffMs / (1000 * 60 * 60 * 24 * 7);
                     if (diffDays > 3) {
                         setEditLocked(true);
                     } else {
