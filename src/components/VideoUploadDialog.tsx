@@ -36,6 +36,7 @@ export function VideoUploadDialog({
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [videoDuration, setVideoDuration] = useState<number>(0);
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -44,14 +45,24 @@ export function VideoUploadDialog({
       toast.error("Vui lòng chọn file video hợp lệ!");
       return;
     }
-    const maxSize = 500 * 1024 * 1024;
+    const maxSize = 100 * 1024 * 1024;
     if (file.size > maxSize) {
-      toast.error("File video không được vượt quá 500MB!");
+      toast.error("File video không được vượt quá 100MB!");
       return;
     }
     setSelectedFile(file);
     const url = URL.createObjectURL(file);
     setPreviewUrl(url);
+    
+    // lấy duration của video
+    const videoElement = document.createElement("video");
+    videoElement.preload = "metadata";
+    videoElement.onloadedmetadata = () => {
+      window.URL.revokeObjectURL(videoElement.src);
+      const duration = Math.floor(videoElement.duration);
+      setVideoDuration(duration);
+    };
+    videoElement.src = url;
   };
 
   const handleUpload = async () => {
@@ -67,7 +78,7 @@ export function VideoUploadDialog({
       const formData = new FormData();
       formData.append("video", selectedFile);
       formData.append("title", selectedFile.name);
-      formData.append("duration", "00:00"); 
+      formData.append("duration", videoDuration.toString()); 
       const response = await api.put(`/lessons/${lessonId}`, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
@@ -108,6 +119,7 @@ export function VideoUploadDialog({
       setPreviewUrl(null);
     }
     setUploadProgress(0);
+    setVideoDuration(0);
   };
 
   return (
