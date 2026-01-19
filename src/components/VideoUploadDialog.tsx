@@ -98,7 +98,6 @@ export function VideoUploadDialog({
         onUploadSuccess(videoUrl);
         toast.success("Upload video thành công!");
         setOpen(false);
-        
         setSelectedFile(null);
         setPreviewUrl(null);
         setUploadProgress(0);
@@ -150,7 +149,7 @@ export function VideoUploadDialog({
                     <span className="font-semibold">Click để chọn</span> hoặc kéo thả file vào đây
                   </p>
                   <p className="text-xs text-slate-500">
-                    MP4, AVI, MOV, MKV (tối đa 500MB)
+                    MP4, AVI, MOV, MKV (tối đa 100MB)
                   </p>
                 </div>
                 <input
