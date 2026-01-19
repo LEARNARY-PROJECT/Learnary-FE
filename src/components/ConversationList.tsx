@@ -57,7 +57,7 @@ export default function ConversationList({
   return (
     <div className="flex flex-col h-full border-r bg-white">
       <div className="p-4 border-b">
-        <h2 className="text-xl font-bold mb-3">Tin nhắn</h2>
+        <h2 className="text-xl font-bold mb-3">Tin nhắn của bạn</h2>
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
           <Input
