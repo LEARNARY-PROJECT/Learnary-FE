@@ -368,6 +368,7 @@ export default function EditCoursePage({ params }: { params: Promise<{ id: strin
                     setNewlyCreatedChapters([]);
                     setNewlyCreatedLessons([]);
                     toast.success("Đã lưu bản nháp thành công! Bạn có thể xem tất cả khoá học của bạn tại trang khoá học của tôi!");
+                    router.push('/instructor/my-courses');
                 }
             } else {
                 if (!canSubmit) {
