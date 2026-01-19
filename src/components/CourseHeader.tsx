@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 interface CourseHeaderProps {
   category_name: string;
   title: string;
-  description: string;
+  description?: string;
   rating?: number;
   total_reviews?: number;
   total_students?: number;
@@ -19,7 +19,7 @@ interface CourseHeaderProps {
 export default function CourseHeader({
   category_name,
   title,
-  description,
+ /*  description, */
   rating,
   total_reviews,
   total_students,
@@ -38,9 +38,9 @@ export default function CourseHeader({
         <h1 className="font-rosario-bold text-3xl md:text-4xl mb-4">
           {title}
         </h1>
-        <p className="font-roboto text-gray-200 text-lg mb-6 max-w-4xl wrap-break-word">
+        {/* <p className="font-roboto text-gray-200 text-lg mb-6 max-w-4xl wrap-break-word">
           {description}
-        </p>
+        </p> */}
         <div className="flex flex-wrap items-center gap-4 font-roboto text-sm">
           <div className="flex items-center gap-1">
             <span className="text-yellow-400 font-bold">{rating}</span>
