@@ -19,6 +19,7 @@ export default function VerifyEmailPage() {
     const [countDown, setCountDown] = useState(60)
     const [canResend, setCanResend] = useState(false)
     const hasSentOTP = useRef(false)
+    const hasVerified = useRef(false)
     const router = useRouter();
     const params = useParams();
     const locale = params.locale as string || 'vi';
@@ -32,40 +33,62 @@ export default function VerifyEmailPage() {
                 hasSentOTP.current = true; 
                 await api.post(`/account-securities/resend-otp/${userId}`);
                 toast.success("Vui lòng kiểm tra hòm thư của bạn, chúng tôi đã gửi 1 OTP đến email của bạn.");
-            } catch {
-                toast.error( "Lỗi khi gửi mã xác thực");
+            } catch (error) {
+                const err = error as { response?: { data?: { error?: string } } };
+                if (err.response?.data?.error === 'Email already verified') {
+                    toast.info("Email của bạn đã được xác thực rồi");
+                    setTimeout(() => {
+                        router.push(`/${locale}/profile`);
+                    }, 1500);
+                    return;
+                }
+                
                 hasSentOTP.current = false;
             }
         };
         sendInitialOTP();
-    }, [userId]); 
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []); // chỉ chạy 1 lần khi mount 
 
     const handleVerify = useCallback(async () => {
-        if (otp.length !== 6) return;
+        if (otp.length !== 6 || hasVerified.current || isLoading) return;
         if (!userId) {
             toast.error("Vui lòng đăng nhập trước khi xác thực email");
             router.push(`/${locale}/login`);
             return;
         }
+        
+        hasVerified.current = true;
         setIsLoading(true)
+        
         try {
             const res = await api.post(`/account-securities/verify-email/${userId}`, {
                 otp,
             })
             if (res.data.success) { 
-                toast.success("Xác thực email thành công!")
-                await refreshUser();
-                setTimeout(() => {
-                    router.push(`/${locale}/profile`)
-                }, 1500)
+                setOtp("");
+                try {
+                    await refreshUser();
+                    toast.success("Xác thực email thành công!")
+                    setTimeout(() => {
+                        router.push(`/${locale}/profile`)
+                    }, 1000)
+                } catch (error) {
+                    console.error("Error refreshing user:", error);
+                    toast.success("Xác thực email thành công!")
+                    setTimeout(() => {
+                        router.push(`/${locale}/profile`)
+                    }, 1000)
+                }
             }
         } catch {
-            toast.error( "Mã OTP không hợp lệ hoặc đã hết hạn");
+            hasVerified.current = false; 
+            toast.error("Mã OTP không hợp lệ hoặc đã hết hạn");
             setOtp("") 
         } finally {
             setIsLoading(false)
         }
-    }, [otp, userId, router, locale, refreshUser])
+    }, [otp, userId, router, locale, refreshUser, isLoading])
 
     useEffect(() => {
         if (countDown > 0) {
@@ -83,7 +106,7 @@ export default function VerifyEmailPage() {
     }, [otp, handleVerify]) */
 
     const handleResend = async () => {
-        if (!userId) return;
+        if (!userId || hasVerified.current) return;
         setIsLoading(true)
         try {
             await api.post(`/account-securities/resend-otp/${userId}`)
