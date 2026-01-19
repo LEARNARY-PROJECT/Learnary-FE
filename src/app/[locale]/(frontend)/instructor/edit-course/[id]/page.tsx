@@ -697,11 +697,11 @@ export default function EditCoursePage({ params }: { params: Promise<{ id: strin
                                     rows={4}
                                     value={course.requirement || ''}
                                     onChange={(e) => updateCourseState(d => d.requirement = e.target.value)}
-                                    maxLength={350}
+                                    maxLength={1500}
                                     disabled={course.status === 'Published'}
                                 />
                                 <p className="text-xs text-gray-500 text-right">
-                                    {course.requirement?.length || 0}/350 ký tự
+                                    {course.requirement?.length || 0}/1500 ký tự
                                 </p>
                             </div>
                             <div className="space-y-2">
@@ -711,13 +711,13 @@ export default function EditCoursePage({ params }: { params: Promise<{ id: strin
                                 </div>
                                 <Textarea
                                     rows={4}
-                                    maxLength={500}
+                                    maxLength={1500}
                                     value={course.description || ''}
                                     onChange={(e) => updateCourseState(d => d.description = e.target.value)}
                                     disabled={course.status === 'Published'}
                                 />
                                 <p className="text-xs text-gray-500 text-right">
-                                    {course.description?.length || 0}/500 ký tự
+                                    {course.description?.length || 0}/1500 ký tự
                                 </p>
                             </div>
                         </CardContent>
@@ -739,9 +739,10 @@ export default function EditCoursePage({ params }: { params: Promise<{ id: strin
                                     <Input
                                         className="border-transparent bg-transparent shadow-none font-bold text-slate-800 focus-visible:ring-0 px-2 h-9 flex-1 hover:bg-slate-100/50 focus:bg-white transition-all"
                                         value={chapter.chapter_title}
+                                        maxLength={150}
+                                        minLength={1}
                                         onChange={(e) => updateCourseState(d => d.chapter[cIdx].chapter_title = e.target.value)}
                                         disabled={course.status === 'Published'}
-
                                     />
                                     <div className="flex items-center gap-1">
                                         <Button variant="ghost" size="icon" className="text-slate-400 hover:text-red-500" onClick={() => handleDeleteChapter(cIdx)} disabled={course.status === 'Published'}>
@@ -764,6 +765,7 @@ export default function EditCoursePage({ params }: { params: Promise<{ id: strin
                                                     <Input
                                                         className="border-transparent shadow-none font-medium focus-visible:ring-0 px-2 h-auto py-1 flex-1 hover:underline focus:no-underline"
                                                         value={lesson.title}
+                                                        maxLength={200}
                                                         onChange={(e) => updateCourseState(d => d.chapter[cIdx].lessons[lIdx].title = e.target.value)}
                                                         placeholder="Tên bài học"
                                                         disabled={course.status === 'Published'}
