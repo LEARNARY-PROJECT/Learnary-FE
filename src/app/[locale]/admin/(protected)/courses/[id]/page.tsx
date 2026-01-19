@@ -393,7 +393,7 @@ export default function AdminCourseDetailPage() {
                 <CourseHeader
                     category_name={categoryName}
                     title={course.title}
-                    description={course.description}
+                    // description={course.description}
                     // Thêm fallback || 0 để tránh lỗi undefined.toLocaleString()
                     rating={course.rating || 0}
                     total_reviews={course.total_reviews || 0}

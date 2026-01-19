@@ -425,8 +425,7 @@ export default function BecomeInstructorPage() {
       });
 
       if (response.data) {
-        toast.success("Đăng ký bằng cấp thành công! Vui lòng đợi phê duyệt.");
-        toast.info("Sau khi admin phê duyệt, bạn sẽ trở thành giảng viên và có thể tạo khóa học!");
+        toast.info("Đăng ký bằng cấp thành công! Vui lòng đợi phê duyệt, sau khi admin phê duyệt, bạn sẽ trở thành giảng viên và có thể tạo khóa học!");
         setQualification({
           specialization_name: "",
           type: "Degree",
