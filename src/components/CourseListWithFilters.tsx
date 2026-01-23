@@ -359,7 +359,7 @@ const CourseListWithFilters: React.FC = () => {
         </>
       )}
 
-      {displayType !== "courses" && (
+      {(displayType === "combos" || displayType === "all") && (
         <div className={displayType === "all" && coursesByCategory.length > 0 ? "mt-12" : ""}>
           {filteredCombos.length === 0 ? (
             displayType === "combos" ? (

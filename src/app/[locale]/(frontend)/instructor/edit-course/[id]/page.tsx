@@ -435,7 +435,7 @@ export default function EditCoursePage({ params }: { params: Promise<{ id: strin
             <div className="flex flex-col items-center justify-center min-h-screen p-10">
                 <div className="p-6 bg-red-50 border border-red-200 rounded-md text-red-700 text-center max-w-lg">
                     <h2 className="font-bold text-lg mb-2">Bạn không thể chỉnh sửa khóa học này</h2>
-                    <p>Khóa học đã bị từ chối và đã quá 3 ngày kể từ thời điểm bị từ chối. Nếu cần hỗ trợ, vui lòng liên hệ quản trị viên.</p>
+                    <p>Khóa học đã bị từ chối và đã quá 7 ngày kể từ thời điểm bị từ chối. Nếu cần hỗ trợ, vui lòng liên hệ quản trị viên.</p>
                     <Button className="mt-6" onClick={() => router.push('/instructor/my-courses')}>Quay lại danh sách khóa học</Button>
                 </div>
             </div>
